@@ -38,7 +38,7 @@ jobs:
           cache: pnpm
 
       - name: 识别 GitHub Pages 路由前缀
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: 恢复依赖缓存并安装
         run: pnpm install --frozen-lockfile
