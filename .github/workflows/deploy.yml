@@ -24,12 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 检出源码仓库
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: 安装 pnpm 包管理工具
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: 配置 Node.js 运行时 (22.x LTS)
         uses: actions/setup-node@v6
@@ -50,7 +50,7 @@ jobs:
         run: pnpm run build
 
       - name: 上传 GitHub Pages 构建产物
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/.vitepress/dist
 
@@ -64,4 +64,4 @@ jobs:
     steps:
       - name: 执行 GitHub Pages 部署发布
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
