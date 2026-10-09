@@ -1,0 +1,45 @@
+/**
+ * 超长代码块最大高度约束与极客纯净内滚动条样式规范
+ * 借鉴 GitHub / Stripe / Vercel 现代技术文档体验，告别生硬遮罩与遮挡文字的展开胶囊
+ * @author Ateng
+ * @since 2026-09-27
+ */
+
+/* 1. 代码块容器最大高度约束与纵向平滑滚动（宽屏与桌面端生效，手机端自然展开杜绝手势陷阱） */
+@media (min-width: 640px) {
+  div[class*="language-"] {
+    max-height: 560px;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--vp-c-divider) transparent;
+    position: relative;
+    scroll-behavior: smooth;
+  }
+
+  /* 2. WebKit 极细品牌质感滚动条 */
+  div[class*="language-"]::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  div[class*="language-"]::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  div[class*="language-"]::-webkit-scrollbar-thumb {
+    background-color: var(--vp-c-divider);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  div[class*="language-"]:hover::-webkit-scrollbar-thumb {
+    background-color: var(--vp-c-brand-1);
+  }
+}
+
+/* 3. 代码与行号容器内部自然展开，跟随外层容器统一纵向滚动 */
+div[class*="language-"] pre {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+

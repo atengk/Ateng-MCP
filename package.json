@@ -1,0 +1,47 @@
+{
+  "name": "ateng-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "面向大模型与 Agent 生态的现代化 Model Context Protocol (MCP) 统一服务矩阵与官方文档门户",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atengk/Ateng-MCP.git"
+  },
+  "homepage": "https://atengk.github.io/Ateng-MCP/",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@9.15.4",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "init:project": "node scripts/init-new-project.mjs",
+    "commit": "bash scripts/commit.sh",
+    "release": "bash scripts/release.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "minisearch": "^7.2.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.25",
+    "@shikijs/vitepress-twoslash": "^4.4.3",
+    "@stackblitz/sdk": "^1.11.1",
+    "@unocss/preset-icons": "^66.0.0",
+    "@unocss/preset-uno": "^66.0.0",
+    "@vite-pwa/vitepress": "^1.1.0",
+    "markdown-it-mathjax3": "^4.3.2",
+    "markmap-lib": "^0.18.12",
+    "markmap-view": "^0.18.12",
+    "medium-zoom": "^1.1.0",
+    "mermaid": "^12.0.0",
+    "typescript": "^5.7.3",
+    "unocss": "^66.0.0",
+    "vitepress": "^1.6.3"
+  },
+  "author": "Ateng"
+}

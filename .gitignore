@@ -1,0 +1,61 @@
+# ==============================================================================
+# Git 忽略文件配置
+# ==============================================================================
+
+# 依赖管理
+node_modules/
+.pnpm-store/
+
+# Vite / VitePress 构建产物与缓存
+dist/
+dist-artifacts/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+*.timestamp-*.mjs
+docs/.vitepress/*.mjs
+
+# 操作系统、临时目录与草稿沙箱
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+scratch/
+.scratch/
+scratchpad/
+.scratchpad/
+sandbox/
+.sandbox/
+
+# 编辑器与 IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.local
+
+# 测试覆盖率与代码分析缓存
+coverage/
+*.lcov
+.nyc_output/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.eslintcache
+
+# 环境变量与日志
+.env
+.env.*
+!.env.example
+*.log
+logs/

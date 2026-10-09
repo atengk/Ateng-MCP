@@ -1,0 +1,163 @@
+name: Release (全自动发版与多维分发)
+
+# ==============================================================================
+# 双通道发版触发机制:
+# 1. 本地脚本驱动: 运行 scripts/release.sh (或 pnpm release) 打 Tag 并推送
+# 2. 云端网页调度: 在 GitHub Actions 页面手动输入目标版本号 (workflow_dispatch)
+# ==============================================================================
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: '拟发布的目标版本号 (必须以 v 开头，例如 v1.2.0)'
+        required: true
+        type: string
+
+# 授予创建 GitHub Release、挂载二进制附件及推送容器镜像至 GHCR 的权限
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ============================================================================
+  # 核心 Job 1: 构建静态产物、生成变更日志并发布 GitHub Release
+  # ============================================================================
+  github-release:
+    name: 构建产物与发布 GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码 (全量历史供 git-cliff 分析)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 解析发版元数据
+        id: release-meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_NAME="${{ inputs.tag_name }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+          
+          # 语义化版本正则双重防呆：阻断非标原生标签误触发发版
+          if ! echo "$TAG_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'; then
+            echo "::error::推送的标签 [$TAG_NAME] 不符合语义化版本规范！必须形如 v1.0.0 或 v1.0.0-rc.1，已安全终止发版流水线。"
+            exit 1
+          fi
+
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          RAW_VERSION="${TAG_NAME#v}"
+          echo "raw_version=$RAW_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [[ "$TAG_NAME" =~ - ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 设置 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 设置 Node.js 环境 (20.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 安装锁定依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 静态类型检查
+        run: pnpm typecheck
+
+      - name: 编译生产级静态站点产物
+        run: pnpm build
+
+      - name: 打包静态产物并生成校验和清单
+        run: |
+          mkdir -p dist-artifacts
+          ZIP_NAME="vitepress-zenith-dist-${{ steps.release-meta.outputs.tag_name }}.zip"
+          
+          # 将编译好的 docs/.vitepress/dist 压缩打包
+          cd docs/.vitepress/dist && zip -r "../../../dist-artifacts/$ZIP_NAME" . && cd ../../..
+          
+          # 自动计算 SHA-256 校验和并写入清单
+          cd dist-artifacts
+          sha256sum "$ZIP_NAME" > checksums.txt
+          cd ..
+
+      - name: 生成发布日志 (基于 git-cliff 与 Conventional Commits)
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: .cliff.toml
+          args: --tag ${{ steps.release-meta.outputs.tag_name }} --latest --strip header --github-repo ${{ github.repository }}
+        env:
+          OUTPUT: CHANGELOG_RELEASE.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 创建 GitHub Release 并挂载制品
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.release-meta.outputs.tag_name }}
+          name: ${{ steps.release-meta.outputs.tag_name }}
+          body: ${{ steps.git-cliff.outputs.content }}
+          draft: false
+          prerelease: ${{ steps.release-meta.outputs.is_prerelease == 'true' }}
+          files: |
+            dist-artifacts/*.zip
+            dist-artifacts/checksums.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # 核心 Job 2: 构建轻量级 Docker 镜像并推送至 GHCR (多架构支持)
+  # ============================================================================
+  publish-docker:
+    name: 构建并推送 Docker 镜像 (GHCR)
+    needs: github-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 设置 QEMU 模拟器 (多架构支持)
+        uses: docker/setup-qemu-action@v3
+
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录 GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 提取 Docker 镜像元数据
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+
+      - name: 构建并推送多架构镜像 (amd64 / arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          sbom: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

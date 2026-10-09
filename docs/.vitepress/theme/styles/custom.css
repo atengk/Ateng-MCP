@@ -1,0 +1,190 @@
+/**
+ * 全局样式增强与中文排版微调
+ * @author Ateng
+ * @since 2026-09-25
+ */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 杜绝中文负字间距与压迫感 */
+body, h1, h2, h3, h4, h5, h6, p, li {
+  letter-spacing: 0.01em;
+}
+
+/* 首页 Hero 渐变微光视觉增强 */
+:root {
+  --vp-home-hero-image-background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0%, rgba(236, 72, 153, 0.25) 50%, rgba(6, 182, 212, 0.3) 100%);
+  --vp-home-hero-image-filter: blur(52px);
+}
+
+.VPHero .name {
+  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, #ec4899 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 首页 Hero 标题中文排版与行高优化：消除大字号行高不足导致的笔画碰撞与文字重叠 */
+.VPHero .heading {
+  gap: 8px;
+}
+
+.VPHero .name,
+.VPHero .text {
+  line-height: 1.28 !important;
+}
+
+/* 首页 Hero Logo 浮动动画与品牌光晕增强（全设备通用） */
+.VPHero .image-src {
+  filter: drop-shadow(0 16px 32px rgba(79, 70, 229, 0.28));
+  animation: hero-logo-float 5s ease-in-out infinite;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.VPHero .image-src:hover {
+  transform: translate(-50%, -50%) scale(1.04) translateY(-4px);
+}
+
+@keyframes hero-logo-float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-10px);
+  }
+}
+
+/* 仅在桌面宽屏（>= 960px）扩展容器与大图尺寸，移动端严格遵循 VitePress 默认流式占位防塌陷 */
+@media (min-width: 960px) {
+  .VPHero .image-container {
+    width: 100%;
+    max-width: 380px;
+    height: 100%;
+    max-height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .VPHero .image-src {
+    max-width: 320px !important;
+    max-height: 320px !important;
+  }
+}
+
+/* 首页特性卡片悬浮高光过渡 */
+.VPFeatures .VPFeature {
+  border: 1px solid var(--vp-c-bg-soft);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) {
+  .VPFeatures .VPFeature:hover {
+    border-color: var(--vp-c-brand-1);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -10px var(--vp-c-brand-soft);
+  }
+}
+
+/* Medium-zoom 插图点击灯箱层级与视觉增强 */
+.medium-zoom-overlay {
+  z-index: 100 !important;
+  backdrop-filter: blur(4px);
+}
+
+.medium-zoom-image--opened {
+  z-index: 101 !important;
+  border-radius: 6px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.vp-doc img {
+  cursor: zoom-in;
+  border-radius: 6px;
+}
+
+.vp-doc img.no-zoom,
+.vp-doc img.logo {
+  cursor: default;
+}
+
+/* 全局顶部公告横幅高度平滑响应过渡 */
+:root {
+  --vp-layout-top-height: 0px;
+}
+
+.VPNav {
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s;
+}
+
+.VPSidebar {
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+ * 顶栏控制区布局与呼吸感微调 (NavBar Controls Spacing & Divider)
+ * 解决调色盘与社交链接贴脸碰撞、负边距吞噬间隙的问题，提供通透优雅的呼吸感
+ * -------------------------------------------------------------------------- */
+@media (min-width: 1280px) {
+  /* 消除社交外链原生的 -8px 负边距，恢复正常容器边界 */
+  .VPNavBar .social-links {
+    margin-right: 0 !important;
+  }
+
+  /* 调色盘组件容器增加呼吸间距与微细分割线 */
+  .VPNavBar .vp-theme-picker {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+  }
+
+  /* 在社交链接与调色盘之间添加高度 24px 的优雅微分割线，与左侧外观分割线完美呼应 */
+  .VPNavBar .vp-theme-picker::before {
+    content: "";
+    display: block;
+    margin-right: 12px;
+    margin-left: 8px;
+    width: 1px;
+    height: 24px;
+    background-color: var(--vp-c-divider);
+    flex-shrink: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * 多媒体深浅色自适应与排版美化 (Media Adaptations & Modern Styling)
+ * -------------------------------------------------------------------------- */
+
+/* 1. 深浅色模式专用图片交替显隐 */
+html:not(.dark) .dark-only,
+html.dark .light-only {
+  display: none !important;
+}
+
+/* 2. 正文原生视频自适应容器与高质感圆角 */
+.vp-doc video {
+  display: block;
+  max-width: 100%;
+  margin: 20px 0;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 3. 正文原生第三方流媒体嵌入 iframe 容器保底 */
+.vp-doc .vp-video-responsive,
+.vp-doc iframe.vp-video-embed {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+

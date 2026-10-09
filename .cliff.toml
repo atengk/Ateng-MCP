@@ -1,0 +1,58 @@
+# ==============================================================================
+# git-cliff 自动化变更日志配置
+# 详见: https://git-cliff.org/docs/configuration
+# ==============================================================================
+
+[remote.github]
+owner = "atengk"
+repo = "vitepress-zenith"
+
+[changelog]
+header = ""
+body = """
+{% for entry in commits | commit_groups(groups=commit_parsers_groups) %}
+### {{ entry.group | trim }}
+{% for commit in entry.commits %}
+- {% if commit.scope %}**{{ commit.scope }}**: {% endif %}{{ commit.message | upper_first }}\
+  {% if commit.remote.pr_number %} in #{{ commit.remote.pr_number }}{% endif %}\
+  {% if commit.remote.username %} by @{{ commit.remote.username }}{% endif %}\
+  {% if not commit.remote.pr_number %} ({{ commit.id | truncate(length=7, end="") }}){% endif %}\
+{% endfor %}
+{% endfor %}
+{% if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}
+### 🎉 新贡献者致谢 (New Contributors)
+{% for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}
+- 感谢 @{{ contributor.username }} 提交的首次贡献！
+{% endfor %}
+{% endif %}\n
+"""
+trim = true
+
+[git]
+# 开启 Conventional Commits 解析
+conventional_commits = true
+# 即使未按规范前缀书写的普通提交也完整保留，杜绝漏掉任何变更
+filter_unconventional = false
+split_commits = false
+
+commit_parsers = [
+  { message = "^.*!:|BREAKING CHANGE", group = "💥 破坏性更新 (Breaking Changes)" },
+  { message = "^feat", group = "✨ 新特性 (Features)" },
+  { message = "^fix", group = "🐛 缺陷修复 (Bug Fixes)" },
+  { message = "^perf", group = "⚡ 性能提升 (Performance)" },
+  { message = "^refactor", group = "♻️ 代码重构 (Refactoring)" },
+  { message = "^docs", group = "📝 文档调整 (Documentation)" },
+  { message = "^style", group = "💄 代码风格 (Styles)" },
+  { message = "^test", group = "✅ 测试用例 (Tests)" },
+  { message = "^build", group = "📦 构建体系 (Build System)" },
+  { message = "^ci", group = "🤖 自动化流程 (CI/CD)" },
+  { message = "^chore\\(release\\)", skip = true },
+  { message = "^chore", group = "🧹 日常维护 (Maintenance)" },
+  { message = "^revert", group = "⏪ 代码回滚 (Revert)" },
+  { message = ".*", group = "📌 其他变更 (Other Changes)" },
+]
+
+# 过滤配置
+filter_commits = false
+tag_pattern = "v?[0-9].*"
+sort_commits = "oldest"

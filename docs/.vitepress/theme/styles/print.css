@@ -1,0 +1,155 @@
+/**
+ * 白皮书级纯净打印样式规则 (@media print)
+ * 自动净化所有导航、浮层与交互控件，保障文档/博客一键输出规整清晰的排版
+ * @author Ateng
+ * @since 2026-09-25
+ */
+
+@media print {
+  /* 1. 打印页面边距与纸张规范 */
+  @page {
+    margin: 18mm 16mm 18mm 16mm;
+    size: auto;
+  }
+
+  /* 2. 隐藏全站辅助元素、浮层与交互控件 */
+  .VPNav,
+  .VPSidebar,
+  .VPDocAside,
+  .VPDocFooter,
+  .zen-mode-toggle,
+  .reading-progress-container,
+  .vp-comments-section,
+  .vp-banner-wrapper,
+  .vp-helpful-section,
+  .code-fold-trigger,
+  .copy,
+  .vp-theme-picker,
+  .vp-command-palette-backdrop,
+  .medium-zoom-overlay,
+  .zen-quick-btn,
+  .print-quick-btn,
+  .vp-link-preview-card,
+  .header-anchor {
+    display: none !important;
+  }
+
+  /* 3. 正文布局铺平与纯白底色 */
+  html,
+  body,
+  #app,
+  .Layout,
+  .VPContent,
+  .VPDoc,
+  .VPDoc .container,
+  .VPDoc .content,
+  .vp-doc {
+    background: #ffffff !important;
+    color: #111827 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* 4. 纸质白皮书级字体与行高排版 */
+  .vp-doc {
+    font-size: 11pt !important;
+    line-height: 1.65 !important;
+    color: #1f2937 !important;
+  }
+
+  .vp-doc h1 {
+    font-size: 22pt !important;
+    margin-top: 0 !important;
+    margin-bottom: 12pt !important;
+    color: #0f172a !important;
+  }
+
+  .vp-doc h2 {
+    font-size: 16pt !important;
+    margin-top: 18pt !important;
+    margin-bottom: 8pt !important;
+    color: #0f172a !important;
+  }
+
+  .vp-doc h3 {
+    font-size: 13pt !important;
+    margin-top: 14pt !important;
+    margin-bottom: 6pt !important;
+    color: #0f172a !important;
+  }
+
+  /* 5. 规避分页断行横切突兀破损 */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  pre,
+  code,
+  table,
+  blockquote,
+  img,
+  svg,
+  .vp-card,
+  .vp-timeline-item,
+  .mermaid,
+  .markmap {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 6. 超长折叠代码块在打印时强制展开全部代码 */
+  .has-code-folding.is-collapsed {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* 7. 代码块浅色边框与纯净底色 */
+  div[class*="language-"] {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    margin: 10pt 0 !important;
+  }
+
+  div[class*="language-"] pre,
+  div[class*="language-"] code {
+    background-color: transparent !important;
+    color: #1e293b !important;
+    font-size: 9.5pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* 8. 表格排版打印优化 */
+  .vp-doc table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 10pt 0 !important;
+  }
+
+  .vp-doc th,
+  .vp-doc td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 6pt 10pt !important;
+    background-color: transparent !important;
+  }
+
+  .vp-doc th {
+    background-color: #f1f5f9 !important;
+    font-weight: 600 !important;
+  }
+
+  /* 9. 引用块微调 */
+  .vp-doc blockquote {
+    border-left: 3pt solid #94a3b8 !important;
+    background-color: #f8fafc !important;
+    padding: 6pt 12pt !important;
+    margin: 10pt 0 !important;
+    color: #475569 !important;
+  }
+}

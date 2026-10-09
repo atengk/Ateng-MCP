@@ -1,0 +1,67 @@
+name: 部署 Ateng MCP 文档中心 至 GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+# 授予部署到 GitHub Pages 所需的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 防止并发部署冲突
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: 构建生产级静态站点
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码仓库
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 pnpm 包管理工具
+        uses: pnpm/action-setup@v4
+
+      - name: 配置 Node.js 运行时
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 识别 GitHub Pages 路由前缀
+        uses: actions/configure-pages@v4
+
+      - name: 恢复依赖缓存并安装
+        run: pnpm install --frozen-lockfile
+
+      - name: 静态类型诊断检查
+        run: pnpm run typecheck
+
+      - name: 编译构建全站静态文档与博客
+        run: pnpm run build
+
+      - name: 上传 GitHub Pages 构建产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    name: 自动化发布到 GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 执行 GitHub Pages 部署发布
+        id: deployment
+        uses: actions/deploy-pages@v4

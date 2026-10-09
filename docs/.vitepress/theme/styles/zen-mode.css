@@ -1,0 +1,73 @@
+/**
+ * 沉浸式专注阅读模式 (Zen Mode) 全屏黄金版心样式规范
+ * 彻底隐藏顶栏、侧边栏、底栏与外围干扰，留给正文 1240px 舒展纯净画布
+ * @author Ateng
+ * @since 2026-09-27
+ */
+
+/* 1. 消除顶部动态占位与隐藏所有外围非正文控件 */
+html.zen-mode {
+  --vp-layout-top-height: 0px !important;
+}
+
+html.zen-mode .VPNavBar,
+html.zen-mode .VPNav,
+html.zen-mode .VPSidebar,
+html.zen-mode .VPLocalNav,
+html.zen-mode .VPDoc .aside,
+html.zen-mode .VPFooter,
+html.zen-mode .vp-banner,
+html.zen-mode .vp-announcement-banner,
+html.zen-mode .vp-legacy-banner,
+html.zen-mode .reading-progress-bar,
+html.zen-mode .zen-mode-toggle,
+html.zen-mode .vp-pwa-banner {
+  display: none !important;
+}
+
+/* 2. 主内容区域 (Content) 消除顶边距与双侧边栏留白 */
+html.zen-mode .VPContent,
+html.zen-mode .VPContent.has-sidebar {
+  padding-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* 3. VPDoc 正文外层居中排布与舒适呼吸留白 */
+html.zen-mode .VPDoc {
+  padding: 80px 0 96px !important;
+}
+
+html.zen-mode .VPDoc .container {
+  max-width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+/* 4. 黄金舒适阅读加宽版心 (1240px)，宽屏下舒展居中且维持舒适眼动范围 */
+html.zen-mode .VPDoc .content {
+  max-width: 1240px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 36px 96px !important;
+}
+
+html.zen-mode .VPDoc .content-container {
+  max-width: 1240px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+html.zen-mode .vp-doc {
+  max-width: 100% !important;
+}
+
+/* 5. 专注阅读模式下的专业排版呼吸感增强 */
+html.zen-mode .vp-doc p,
+html.zen-mode .vp-doc li {
+  line-height: 1.95;
+  font-size: 1.05rem;
+}
