@@ -11,20 +11,20 @@ order: 1
 
 ## 1. 矩阵服务导航
 
-点击对应卡片即可进入具体服务端的详细设计规范、接口契约与客户端挂载指南：
+点击对应卡片即可进入具体服务端的详细架构设计、Tools 契约字典与客户端挂载指南：
 
 <VpCardGrid :cols="3">
   <VpCard
     title="RocketMQ 5 控制面"
-    desc="基于 Spring AI 的生产级消息引擎拓扑感知、Topic 与消费组治理及死信队列重投控制面。"
+    desc="基于 Spring AI 2 与 Spring Boot 4 的企业级控制面，覆盖集群拓扑、Topic/消费组治理与死信队列重投。"
     icon="i-lucide-layers"
-    badge="Spring AI / Java"
+    badge="Spring AI / Java 21"
     badgeType="tip"
     link="./messaging/rocketmq.md"
   />
   <VpCard
     title="Kafka 生产级服务"
-    desc="面向大规模事件流的 Broker 拓扑巡检、Topic 分区再均衡、消费延迟分析与消息采样回放。"
+    desc="基于 FastMCP 与 aiokafka 异步架构，提供双重安全只读防线、零位移侵入消息采样与 Lag 堆积诊断。"
     icon="i-lucide-activity"
     badge="FastMCP / Python"
     badgeType="tip"
@@ -32,15 +32,15 @@ order: 1
   />
   <VpCard
     title="RabbitMQ 智能服务"
-    desc="提供 Exchange 路由匹配分析、Queue 积压预警、死信投递审计与 Erlang 节点健康探测。"
+    desc="Go 原生高性能内核，深度打通 AMQP 0-9-1 与 Management API，支持拓扑声明与无害消息排查。"
     icon="i-lucide-shuffle"
-    badge="TypeScript / Node"
+    badge="Go / AMQP"
     badgeType="info"
     link="./messaging/rabbitmq.md"
   />
   <VpCard
     title="Kubernetes 智能运维"
-    desc="面向云原生集群的 SRE Copilot，支持多集群状态感知、Pod 故障根因诊断与事件流巡检。"
+    desc="基于官方 client-go 构建的云原生 SRE 底座，支持 Pod 故障排障、容器日志流式读取与事件审计。"
     icon="i-lucide-box"
     badge="Go / client-go"
     badgeType="purple"
@@ -48,15 +48,15 @@ order: 1
   />
   <VpCard
     title="S3 对象存储"
-    desc="兼容 AWS S3 与 MinIO 的多云存储中枢，支持 Bucket 权限合规审计与预签名链接安全生成。"
+    desc="深度兼容 RustFS、MinIO、AWS S3 与阿里云 OSS，内置三位一体安全防灾铁律与并发分段上传。"
     icon="i-lucide-hard-drive"
-    badge="FastMCP / Python"
+    badge="TypeScript / Node"
     badgeType="tip"
     link="./storage/s3.md"
   />
   <VpCard
     title="Email 邮件服务"
-    desc="企业级 SMTP/IMAP 邮件自动化收发、工单告警模板渲染、收件箱重要度摘要与安全审计。"
+    desc="支持多账户并发、RFC 会话回复保持、IMAP 复合检索、附件安全沙箱与防灾软删除的邮件能力底座。"
     icon="i-lucide-mail"
     badge="TypeScript / Node"
     badgeType="info"
@@ -70,7 +70,7 @@ order: 1
 
 ```mermaid
 flowchart TD
-    subgraph Clients["主流 Agent 客户端"]
+    subgraph Clients["主流 Agent 客户端 (MCP Host)"]
         C1["Claude Desktop"]
         C2["Cursor IDE"]
         C3["Cline"]
@@ -83,16 +83,16 @@ flowchart TD
 
     subgraph Matrix["Ateng MCP 生产级服务端矩阵"]
         subgraph MQ["消息队列 (MQ)"]
-            S1["RocketMQ 5 控制面<br/>(Spring AI / Java)"]
-            S2["Kafka 生产级服务<br/>(FastMCP / Python)"]
-            S3["RabbitMQ 智能服务<br/>(TypeScript / Node.js)"]
+            S1["RocketMQ 5 控制面<br/>(Spring AI 2 / Spring Boot 4)"]
+            S2["Kafka 生产级服务<br/>(FastMCP / Python 3.11+)"]
+            S3["RabbitMQ 智能服务<br/>(Go 1.22+ / AMQP 0-9-1)"]
         end
         subgraph Cloud["云原生与存储"]
-            S4["Kubernetes 智能运维<br/>(Go / client-go)"]
-            S5["S3 对象存储<br/>(FastMCP / Python)"]
+            S4["Kubernetes 智能运维<br/>(Go 1.22+ / client-go)"]
+            S5["S3 对象存储<br/>(TypeScript / Node.js >= 20)"]
         end
         subgraph Tools["通信与协作"]
-            S6["Email 邮件服务<br/>(TypeScript / Node.js)"]
+            S6["Email 邮件服务<br/>(TypeScript / Node.js >= 20)"]
         end
     end
 
@@ -113,12 +113,12 @@ flowchart TD
 
 | 服务名称 | 领域分类 | 核心技术栈 | 通信协议 | 运行接入方式 | 详情文档 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **RocketMQ 5 控制面** | 消息队列 | Spring Boot 3 + Spring AI MCP | Stdio / SSE | `java -jar ...` | [查看文档](./messaging/rocketmq.md) |
-| **Kafka 生产级服务** | 消息队列 | Python 3.11 + FastMCP | Stdio / SSE | `uvx ateng-kafka-mcp` | [查看文档](./messaging/kafka.md) |
-| **RabbitMQ 智能服务** | 消息队列 | TypeScript + MCP SDK | Stdio / SSE | `npx ateng-rabbitmq-mcp` | [查看文档](./messaging/rabbitmq.md) |
-| **Kubernetes 智能运维**| 云原生运维 | Go 1.22 + mcp-golang + client-go | Stdio / SSE | 预编译二进制 / 容器 | [查看文档](./cloud/kubernetes.md) |
-| **S3 对象存储** | 存储介质 | Python 3.11 + FastMCP + boto3 | Stdio / SSE | `uvx ateng-s3-mcp` | [查看文档](./storage/s3.md) |
-| **Email 邮件服务** | 通信协作 | TypeScript + Node.js + nodemailer | Stdio / SSE | `npx ateng-email-mcp` | [查看文档](./tools/email.md) |
+| **RocketMQ 5 控制面** | 消息队列 | Spring AI 2 + Spring Boot 4 + JDK 21 | Stdio / SSE | `npx -y @atengk/mcp-server-rocketmq` | [查看文档](./messaging/rocketmq.md) |
+| **Kafka 生产级服务** | 消息队列 | Python 3.11+ + FastMCP + aiokafka | Stdio / SSE | `uvx atengk-mcp-server-kafka` | [查看文档](./messaging/kafka.md) |
+| **RabbitMQ 智能服务** | 消息队列 | Go 1.22+ + AMQP 0-9-1 + REST API | Stdio / SSE | `npx -y @atengk/mcp-server-rabbitmq` | [查看文档](./messaging/rabbitmq.md) |
+| **Kubernetes 智能运维**| 云原生运维 | Go 1.22+ + k8s client-go | Stdio / SSE | `npx -y @atengk/mcp-server-kubernetes` | [查看文档](./cloud/kubernetes.md) |
+| **S3 对象存储** | 存储介质 | TypeScript + Node >= 20 + AWS SDK v3 | Stdio / SSE | `npx -y @atengk/mcp-server-s3` | [查看文档](./storage/s3.md) |
+| **Email 邮件服务** | 通信协作 | TypeScript + Node >= 20 + Nodemailer | Stdio / SSE | `npx -y @atengk/mcp-server-email` | [查看文档](./tools/email.md) |
 
 ---
 

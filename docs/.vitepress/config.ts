@@ -75,41 +75,6 @@ const serversNavItemZh = {
   ],
 }
 
-/**
- * 服务矩阵下拉导航项定义（英文）
- */
-const serversNavItemEn = {
-  text: 'Servers Matrix',
-  items: [
-    { text: 'Matrix Overview', link: '/servers/' },
-    {
-      text: 'Message Queues (MQ)',
-      items: [
-        { text: 'RocketMQ 5 Control Plane', link: '/servers/messaging/rocketmq' },
-        { text: 'Kafka Production Service', link: '/servers/messaging/kafka' },
-        { text: 'RabbitMQ Intelligent Service', link: '/servers/messaging/rabbitmq' },
-      ],
-    },
-    {
-      text: 'Cloud Native & Ops',
-      items: [
-        { text: 'Kubernetes Ops', link: '/servers/cloud/kubernetes' },
-      ],
-    },
-    {
-      text: 'Storage & Media',
-      items: [
-        { text: 'S3 Object Storage', link: '/servers/storage/s3' },
-      ],
-    },
-    {
-      text: 'Tools & Comms',
-      items: [
-        { text: 'Email Service', link: '/servers/tools/email' },
-      ],
-    },
-  ],
-}
 
 /**
  * 多版本下拉导航项定义（中文）
@@ -207,7 +172,6 @@ const enLocaleConfig = {
     nav: [
       { text: 'Home', link: '/en/' },
       { text: 'Guide', link: '/en/guide/getting-started' },
-      serversNavItemEn,
       ...(zenithConfig.blog ? [{ text: 'Blog', link: '/blog/' }] : []),
       ...(zenithConfig.versionSwitcher ? [versionNavItemEn] : []),
     ],
