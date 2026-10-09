@@ -40,6 +40,78 @@ const zenithConfig = {
 }
 
 /**
+ * 服务矩阵下拉导航项定义（中文）
+ */
+const serversNavItemZh = {
+  text: '服务矩阵',
+  items: [
+    { text: '矩阵总览', link: '/servers/' },
+    {
+      text: '消息队列 (MQ)',
+      items: [
+        { text: 'RocketMQ 5 控制面', link: '/servers/messaging/rocketmq' },
+        { text: 'Kafka 生产级服务', link: '/servers/messaging/kafka' },
+        { text: 'RabbitMQ 智能服务', link: '/servers/messaging/rabbitmq' },
+      ],
+    },
+    {
+      text: '云原生与运维',
+      items: [
+        { text: 'Kubernetes 智能运维', link: '/servers/cloud/kubernetes' },
+      ],
+    },
+    {
+      text: '存储与介质',
+      items: [
+        { text: 'S3 对象存储', link: '/servers/storage/s3' },
+      ],
+    },
+    {
+      text: '通信与工具',
+      items: [
+        { text: 'Email 邮件服务', link: '/servers/tools/email' },
+      ],
+    },
+  ],
+}
+
+/**
+ * 服务矩阵下拉导航项定义（英文）
+ */
+const serversNavItemEn = {
+  text: 'Servers Matrix',
+  items: [
+    { text: 'Matrix Overview', link: '/servers/' },
+    {
+      text: 'Message Queues (MQ)',
+      items: [
+        { text: 'RocketMQ 5 Control Plane', link: '/servers/messaging/rocketmq' },
+        { text: 'Kafka Production Service', link: '/servers/messaging/kafka' },
+        { text: 'RabbitMQ Intelligent Service', link: '/servers/messaging/rabbitmq' },
+      ],
+    },
+    {
+      text: 'Cloud Native & Ops',
+      items: [
+        { text: 'Kubernetes Ops', link: '/servers/cloud/kubernetes' },
+      ],
+    },
+    {
+      text: 'Storage & Media',
+      items: [
+        { text: 'S3 Object Storage', link: '/servers/storage/s3' },
+      ],
+    },
+    {
+      text: 'Tools & Comms',
+      items: [
+        { text: 'Email Service', link: '/servers/tools/email' },
+      ],
+    },
+  ],
+}
+
+/**
  * 多版本下拉导航项定义（中文）
  */
 const versionNavItemZh = {
@@ -135,6 +207,7 @@ const enLocaleConfig = {
     nav: [
       { text: 'Home', link: '/en/' },
       { text: 'Guide', link: '/en/guide/getting-started' },
+      serversNavItemEn,
       ...(zenithConfig.blog ? [{ text: 'Blog', link: '/blog/' }] : []),
       ...(zenithConfig.versionSwitcher ? [versionNavItemEn] : []),
     ],
@@ -144,6 +217,11 @@ const enLocaleConfig = {
         groupTitles: {
           guide: 'Guides',
           components: 'Components',
+          servers: 'Servers Matrix',
+          messaging: 'Message Queues',
+          cloud: 'Cloud Native & Ops',
+          storage: 'Object Storage',
+          tools: 'Tools & Comms',
         },
       }),
       ...(zenithConfig.versionSwitcher ? {
@@ -482,6 +560,7 @@ export default withPwa(defineConfig({
         nav: [
           { text: '首页', link: '/' },
           { text: '指南', link: '/guide/getting-started' },
+          serversNavItemZh,
           ...(zenithConfig.blog ? [{ text: '博客', link: '/blog/' }] : []),
           ...(zenithConfig.versionSwitcher ? [versionNavItemZh] : []),
         ],
@@ -491,6 +570,11 @@ export default withPwa(defineConfig({
             groupTitles: {
               guide: '基础指引',
               components: '交互短代码组件库',
+              servers: '服务矩阵',
+              messaging: '消息队列',
+              cloud: '云原生运维',
+              storage: '对象存储',
+              tools: '通信与工具',
             },
           }),
           ...(zenithConfig.versionSwitcher ? {
