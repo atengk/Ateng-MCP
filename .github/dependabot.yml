@@ -21,14 +21,10 @@ updates:
     labels:
       - "dependencies"
     groups:
-      # 语义化双轨模型：将所有 Actions 的 Minor 与 Patch 补丁打包为单一 PR，杜绝通知轰炸；
-      # 遇到 Major 重大版本跳跃自动单列独立 PR，便于审查破坏性更新与定位问题。
+      # 将所有 Actions 依赖聚合为单一 PR，杜绝零散 PR 打满 open-pull-requests-limit 上限
       actions:
         patterns:
           - "*"
-        update-types:
-          - "minor"
-          - "patch"
 
   # 前端依赖自动化巡检 (双轨聚合分组)
   - package-ecosystem: "npm"
@@ -41,6 +37,10 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
+    ignore:
+      # 忽略 TypeScript 的重大版本跳跃（例如 5.x -> 6.x），防御生态不兼容红灯
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-dependencies:
         dependency-type: "development"

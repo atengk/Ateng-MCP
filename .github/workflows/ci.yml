@@ -75,10 +75,10 @@ jobs:
       - name: 设置 pnpm
         uses: pnpm/action-setup@v4
 
-      - name: 设置 Node.js 环境 (20.x)
-        uses: actions/setup-node@v4
+      - name: 设置 Node.js 环境 (22.x LTS)
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: 确定性安装锁定依赖
