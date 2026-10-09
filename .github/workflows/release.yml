@@ -28,6 +28,10 @@ jobs:
   github-release:
     name: 构建产物与发布 GitHub Release
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.release-meta.outputs.tag_name }}
+      raw_version: ${{ steps.release-meta.outputs.raw_version }}
+      is_prerelease: ${{ steps.release-meta.outputs.is_prerelease }}
     steps:
       - name: 检出源码 (全量历史供 git-cliff 分析)
         uses: actions/checkout@v4
@@ -80,7 +84,7 @@ jobs:
       - name: 打包静态产物并生成校验和清单
         run: |
           mkdir -p dist-artifacts
-          ZIP_NAME="vitepress-zenith-dist-${{ steps.release-meta.outputs.tag_name }}.zip"
+          ZIP_NAME="ateng-mcp-dist-${{ steps.release-meta.outputs.tag_name }}.zip"
           
           # 将编译好的 docs/.vitepress/dist 压缩打包
           cd docs/.vitepress/dist && zip -r "../../../dist-artifacts/$ZIP_NAME" . && cd ../../..
@@ -122,8 +126,14 @@ jobs:
     needs: github-release
     runs-on: ubuntu-latest
     steps:
-      - name: 检出源码
+      - name: 转换仓库名称为全小写 (Lowercase Repository Name)
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: 检出代码 (检出当前发版标签版本)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.github-release.outputs.tag_name }}
+          fetch-depth: 0
 
       - name: 设置 QEMU 模拟器 (多架构支持)
         uses: docker/setup-qemu-action@v3
@@ -142,12 +152,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          # 镜像目标：默认推送至 GHCR（小写规整防报错）；若需推送到 Docker Hub，在下方追加一行：your-username/your-image
+          images: |
+            ghcr.io/${{ env.REPO_LC }}
+          flavor: |
+            latest=${{ needs.github-release.outputs.is_prerelease != 'true' }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
+            type=semver,pattern={{version}},value=${{ needs.github-release.outputs.tag_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.github-release.outputs.tag_name }},enable=${{ needs.github-release.outputs.is_prerelease != 'true' }}
+            type=semver,pattern={{major}},value=${{ needs.github-release.outputs.tag_name }},enable=${{ needs.github-release.outputs.is_prerelease != 'true' }}
+            type=raw,value=${{ needs.github-release.outputs.tag_name }}
 
       - name: 构建并推送多架构镜像 (amd64 / arm64)
         uses: docker/build-push-action@v6
