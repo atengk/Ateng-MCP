@@ -1,6 +1,6 @@
 {
   "name": "ateng-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "面向大模型与 Agent 生态的现代化 Model Context Protocol (MCP) 统一服务矩阵与官方文档门户",
   "repository": {
