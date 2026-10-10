@@ -7,6 +7,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useData } from 'vitepress'
+import { normalizeThemeLink } from '../utils/link'
 
 export interface VpBannerProps {
   /**
@@ -57,6 +58,7 @@ const displayText = computed(() => {
   }
   return theme.value?.zenith?.bannerText || props.text
 })
+const resolvedLink = computed(() => (props.link ? normalizeThemeLink(props.link) : ''))
 
 const bannerRef = ref<HTMLElement | null>(null)
 // 默认初始化为 true，避免页面初次载入时因展开动效引发导航栏瞬时高度测量偏差与闪烁
@@ -144,7 +146,7 @@ function dismiss() {
       <div class="vp-banner-content">
         <slot>
           <span class="vp-banner-text">{{ displayText }}</span>
-          <a v-if="link" :href="link" class="vp-banner-link">
+          <a v-if="resolvedLink" :href="resolvedLink" class="vp-banner-link">
             {{ linkText }}
           </a>
         </slot>

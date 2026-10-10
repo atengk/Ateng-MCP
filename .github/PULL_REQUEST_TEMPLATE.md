@@ -3,14 +3,25 @@
 
 ---
 
+### 关联 Issue (Related Issues)
+<!-- 若本次 PR 修复或关联了已有的 Issue，请在此处填写，例如：close #123 -->
+- 修复/关联: close #
+
+---
+
 ### 变更分类 (Type of Change)
+<!-- 请在符合项的括号内填入 x，例如 [x]（与 CI Conventional Commits 门禁规范严格保持一致） -->
 - [ ] ✨ 新特性 (`feat`)
 - [ ] 🐛 缺陷修复 (`fix`)
 - [ ] 📝 文档调整 (`docs`)
 - [ ] 💄 样式或视觉微调 (`style`)
 - [ ] ♻️ 代码重构 (`refactor`)
 - [ ] ⚡ 性能优化 (`perf`)
-- [ ] 🤖 CI/CD 或工程配置 (`ci` / `chore`)
+- [ ] 🧪 测试用例补充 (`test`)
+- [ ] 📦 构建系统或外部依赖变动 (`build`)
+- [ ] 🤖 CI/CD 自动化流水线变动 (`ci`)
+- [ ] 🧹 常规维护与辅助工具变动 (`chore`)
+- [ ] ⏪ 撤销/恢复先前的提交 (`revert`)
 
 ---
 

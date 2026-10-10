@@ -71,10 +71,10 @@ const currentMeta = computed(() => {
  */
 const list = computed<ContributorInfo[]>(() => {
   if (props.contributors && props.contributors.length > 0) {
-    return props.contributors
+    return props.contributors.filter(Boolean)
   }
-  if (currentMeta.value && currentMeta.value.contributors.length > 0) {
-    return currentMeta.value.contributors
+  if (currentMeta.value && currentMeta.value.contributors?.length > 0) {
+    return currentMeta.value.contributors.filter(Boolean)
   }
   return [
     {
@@ -95,7 +95,7 @@ const resolvedEditUrl = computed(() => {
   if (props.editUrl) return props.editUrl
   const pattern =
     theme.value.editLink?.pattern ||
-    'https://github.com/atengk/vitepress-zenith/edit/master/docs/:path'
+    'https://github.com/atengk/Ateng-MCP/edit/main/docs/:path'
   return pattern.replace(':path', page.value.relativePath)
 })
 
@@ -138,10 +138,11 @@ function formatTimestamp(ts: number): string {
         <div class="vp-contributors-avatars">
           <div
             v-for="author in list"
-            :key="author.name"
+            :key="author?.name"
             class="vp-contributor-item"
           >
             <a
+              v-if="author"
               :href="author.github ? `https://github.com/${author.github}` : undefined"
               :target="author.github ? '_blank' : undefined"
               :rel="author.github ? 'noopener noreferrer' : undefined"

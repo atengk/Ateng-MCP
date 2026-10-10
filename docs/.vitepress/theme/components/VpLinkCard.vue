@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { normalizeThemeLink } from '../utils/link'
 
 const props = withDefaults(
   defineProps<{
@@ -42,7 +43,7 @@ const props = withDefaults(
   }
 )
 
-const resolvedLink = computed(() => props.href || props.link || '#')
+const resolvedLink = computed(() => normalizeThemeLink(props.href || props.link || '#'))
 const resolvedDesc = computed(() => props.desc || props.description || '')
 </script>
 

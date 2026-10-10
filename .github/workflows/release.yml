@@ -1,10 +1,20 @@
-name: Release (全自动发版与多维分发)
+# ==============================================================================
+# 工作流：Release (全自动发版、生成更新日志与制品挂载)
+# 适用场景：基于语义化版本规范的自动化 Release 归档与静态站点分发包挂载
+# 触发通道：
+#   - 标签推送 (push tags: v*): 本地运行 scripts/release.sh (或 pnpm release) 打 Tag 并推送
+#   - 网页调度 (workflow_dispatch): 在 GitHub Actions 页面手动输入目标版本号
+# 核心特性：
+#   - 遵循最小权限原则：顶层 contents: read，Job 级 contents: write
+#   - 包含并发控制互斥锁，全局单例排队执行，确保发版原子性与产物完整性
+#   - 自动编译生产静态产物、打包 Zip 分发包并生成 SHA-256 安全校验和清单 (checksums.txt)
+#   - 调度 git-cliff 提取语义化增量更新说明 (CHANGELOG_RELEASE.md)
+#   - 通过 softprops/action-gh-release 自动创建 GitHub Release 并挂载制品附件
+#   - 支持双模鉴权 (RELEASE_PAT || GITHUB_TOKEN)，突破防死循环限制级联触发下游工作流
+# ==============================================================================
 
-# ==============================================================================
-# 双通道发版触发机制:
-# 1. 本地脚本驱动: 运行 scripts/release.sh (或 pnpm release) 打 Tag 并推送
-# 2. 云端网页调度: 在 GitHub Actions 页面手动输入目标版本号 (workflow_dispatch)
-# ==============================================================================
+name: Release (全自动发版与制品挂载)
+
 on:
   push:
     tags:
@@ -16,27 +26,34 @@ on:
         required: true
         type: string
 
-# 授予创建 GitHub Release、挂载二进制附件及推送容器镜像至 GHCR 的权限
+# 并发控制：同一时间全局仅允许一个发版任务运行，禁止取消正在执行的任务以确保产物完整性与原子性
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+# 最小权限原则：顶层仅授予代码仓库只读权限
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 jobs:
   # ============================================================================
-  # 核心 Job 1: 构建静态产物、生成变更日志并发布 GitHub Release
+  # 核心 Job: 构建静态产物、生成变更日志并发布 GitHub Release
   # ============================================================================
   github-release:
     name: 构建产物与发布 GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # 创建 GitHub Release 与挂载附件所需权限
     outputs:
       tag_name: ${{ steps.release-meta.outputs.tag_name }}
       raw_version: ${{ steps.release-meta.outputs.raw_version }}
       is_prerelease: ${{ steps.release-meta.outputs.is_prerelease }}
     steps:
-      - name: 检出源码 (全量历史供 git-cliff 分析)
+      - name: 检出源码 (全量历史供 git-cliff 分析，支持双模鉴权)
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
 
       - name: 解析发版元数据
         id: release-meta
@@ -76,10 +93,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 静态类型检查
-        run: pnpm typecheck
+        run: pnpm run typecheck
 
       - name: 编译生产级静态站点产物
-        run: pnpm build
+        run: pnpm run build
 
       - name: 打包静态产物并生成校验和清单
         run: |
@@ -118,60 +135,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ============================================================================
-  # 核心 Job 2: 构建轻量级 Docker 镜像并推送至 GHCR (多架构支持)
-  # ============================================================================
-  publish-docker:
-    name: 构建并推送 Docker 镜像 (GHCR)
-    needs: github-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: 转换仓库名称为全小写 (Lowercase Repository Name)
-        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
-
-      - name: 检出代码 (检出当前发版标签版本)
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.github-release.outputs.tag_name }}
-          fetch-depth: 0
-
-      - name: 设置 QEMU 模拟器 (多架构支持)
-        uses: docker/setup-qemu-action@v4
-
-      - name: 设置 Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: 登录 GitHub Container Registry (ghcr.io)
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 提取 Docker 镜像元数据
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          # 镜像目标：默认推送至 GHCR（小写规整防报错）；若需推送到 Docker Hub，在下方追加一行：your-username/your-image
-          images: |
-            ghcr.io/${{ env.REPO_LC }}
-          flavor: |
-            latest=${{ needs.github-release.outputs.is_prerelease != 'true' }}
-          tags: |
-            type=semver,pattern={{version}},value=${{ needs.github-release.outputs.tag_name }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ needs.github-release.outputs.tag_name }},enable=${{ needs.github-release.outputs.is_prerelease != 'true' }}
-            type=semver,pattern={{major}},value=${{ needs.github-release.outputs.tag_name }},enable=${{ needs.github-release.outputs.is_prerelease != 'true' }}
-            type=raw,value=${{ needs.github-release.outputs.tag_name }}
-
-      - name: 构建并推送多架构镜像 (amd64 / arm64)
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          provenance: false
-          sbom: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+# ==============================================================================
+# 💡 容器镜像构建与多场景部署流水线解耦指引
+# ------------------------------------------------------------------------------
+# 1. 多架构 Docker 镜像构建 (GHCR): 已解耦至独立流水线 .github/workflows/docker.yml
+#    - 打 Tag 发版时，docker.yml 与 release.yml 自动并行执行，极大缩短发版耗时；
+#    - 代码合并至 main/master 分支时，docker.yml 亦可自动刷新 latest 与 short-sha 镜像。
+# ==============================================================================

@@ -1,58 +1,50 @@
 <!--
- * 历史归档警告横幅组件（自动感知旧版路由与 Frontmatter 标记，引导读者一键跳转最新稳定版）
+ * 历史归档版本提示横幅组件 (Legacy / Archived Banner)
  * @author Ateng
- * @since 2026-09-25
+ * @since 2026-10-02
 -->
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useData, useRoute } from 'vitepress'
+import { normalizeThemeLink } from '../utils/link'
 
 export interface VpLegacyBannerProps {
   /**
-   * 强制控制横幅显示（若未传则基于当前路由或 Frontmatter 自动探测）
-   */
-  visible?: boolean
-  /**
-   * 当前查阅的历史版本号名称
+   * 显式指定当前页面所代表的历史版本号
    */
   currentVersion?: string
   /**
-   * 目标最新稳定版本号名称
+   * 显式指定当前仓库最新的稳定版本号
    * @default 'v1.0.0'
    */
   latestVersion?: string
   /**
-   * 最新版本文档直达跳转链接
+   * 跳转至最新稳定版的链接
+   * @default 自动计算等价路径或回退至 '/guide/getting-started'
    */
   latestLink?: string
   /**
-   * 警告标题
+   * 提示横幅标题
    */
   title?: string
   /**
-   * 详细警告提示文案
+   * 提示消息说明
    */
   message?: string
   /**
-   * 一键跳转按钮文案
+   * 跳转按钮文案
    */
   buttonText?: string
   /**
-   * 是否允许用户点击关闭本页警告
+   * 是否允许用户在当前会话中暂时关闭此提示
    * @default true
    */
   dismissible?: boolean
 }
 
 const props = withDefaults(defineProps<VpLegacyBannerProps>(), {
-  visible: undefined,
-  currentVersion: undefined,
   latestVersion: 'v1.0.0',
-  latestLink: undefined,
-  title: undefined,
-  message: undefined,
-  buttonText: undefined,
   dismissible: true,
 })
 
@@ -60,13 +52,15 @@ const { frontmatter, lang } = useData()
 const route = useRoute()
 const dismissed = ref(false)
 
-// 探测是否处于历史旧版归档页面
 const isLegacyPage = computed(() => {
-  if (props.visible !== undefined) return props.visible
-  if (frontmatter.value.legacyBanner === false) return false
-
-  // 1. 检查 Frontmatter 声明
-  if (frontmatter.value.legacy || frontmatter.value.isLegacy || frontmatter.value.archived) {
+  // 1. 若 Frontmatter 显式配置了 legacy 或 archived 标记，直接生效
+  if (frontmatter.value.legacy === true || frontmatter.value.archived === true) {
+    return true
+  }
+  if (frontmatter.value.legacy === false || frontmatter.value.archived === false) {
+    return false
+  }
+  if (props.currentVersion) {
     return true
   }
 
@@ -102,19 +96,26 @@ const resolvedLatestVersion = computed(() => {
 })
 
 const resolvedLatestLink = computed(() => {
-  if (props.latestLink) return props.latestLink
-  if (typeof frontmatter.value.latestLink === 'string') return frontmatter.value.latestLink
-
-  const path = route.path
-  // 若路由以历史版本前缀打头，尝试平移至最新版本对应等价路径
-  if (/^\/v\d+(?:\.\d+)*\//.test(path)) {
-    const candidatePath = path.replace(/^\/v\d+(?:\.\d+)*\//, '/')
-    if (candidatePath && candidatePath !== '/') {
-      return candidatePath
+  let targetLink = ''
+  if (props.latestLink) {
+    targetLink = props.latestLink
+  } else if (typeof frontmatter.value.latestLink === 'string') {
+    targetLink = frontmatter.value.latestLink
+  } else {
+    const path = route.path
+    // 若路由以历史版本前缀打头，尝试平移至最新版本对应等价路径
+    if (/^\/v\d+(?:\.\d+)*\//.test(path)) {
+      const candidatePath = path.replace(/^\/v\d+(?:\.\d+)*\//, '/')
+      if (candidatePath && candidatePath !== '/') {
+        targetLink = candidatePath
+      }
+    }
+    if (!targetLink) {
+      targetLink = isEnglish.value ? '/en/guide/getting-started' : '/guide/getting-started'
     }
   }
 
-  return isEnglish.value ? '/en/guide/getting-started' : '/guide/getting-started'
+  return normalizeThemeLink(targetLink)
 })
 
 const resolvedTitle = computed(() => {
