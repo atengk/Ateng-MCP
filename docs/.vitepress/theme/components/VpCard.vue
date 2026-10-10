@@ -57,11 +57,20 @@ const resolvedTarget = computed(() => {
 })
 
 /**
+ * 规范化站内链接，自动剥离 .md 后缀以兼容 VitePress 客户端路由
+ */
+const normalizedLink = computed(() => {
+  if (!props.link) return ''
+  if (isExternal.value) return props.link
+  return props.link.replace(/\.md$/, '')
+})
+
+/**
  * 拦截站内链接，使用 VitePress 客户端路由实现无刷新 SPA 平滑切换
  * @param e 鼠标点击事件
  */
 const handleClick = (e: MouseEvent) => {
-  if (!props.link) return
+  if (!normalizedLink.value) return
   // 如果是外链、在新标签页打开、或者用户按住修饰键（Ctrl/Cmd/Shift/Alt）及非左键，允许原生默认行为
   if (
     isExternal.value ||
@@ -75,7 +84,7 @@ const handleClick = (e: MouseEvent) => {
     return
   }
   e.preventDefault()
-  router.go(props.link)
+  router.go(normalizedLink.value)
 }
 </script>
 
@@ -83,7 +92,7 @@ const handleClick = (e: MouseEvent) => {
   <component
     :is="link ? 'a' : 'div'"
     class="vp-card"
-    :href="link"
+    :href="normalizedLink || undefined"
     :target="link ? resolvedTarget : undefined"
     :rel="link && resolvedTarget === '_blank' ? 'noreferrer noopener' : undefined"
     @click="handleClick"

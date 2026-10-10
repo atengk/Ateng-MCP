@@ -40,7 +40,7 @@ flowchart TD
 
     subgraph Toolsets["13 大核心工具矩阵"]
       AccountOps["账户发现与连通性自检"]
-      SendOps["邮件外发 & RFC 会话回复 (Threading)"]
+      SendOps["邮件外发与 RFC 会话回复 (Threading)"]
       DraftOps["草稿箱人机协同审查"]
       SearchOps["多维复合检索 (带 150 字符摘要)"]
       AttachmentOps["附件受管提取与沙箱落盘"]

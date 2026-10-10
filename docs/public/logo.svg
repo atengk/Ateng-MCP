@@ -1,89 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="16 16 224 224" width="100%" height="100%" fill="none">
   <defs>
-    <!-- 渐变定义 -->
-    <linearGradient id="zenithGradPrimary" x1="20" y1="20" x2="236" y2="236" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#06b6d4" />
-      <stop offset="35%" stop-color="#6366f1" />
-      <stop offset="70%" stop-color="#8b5cf6" />
-      <stop offset="100%" stop-color="#ec4899" />
-    </linearGradient>
-
-    <linearGradient id="zenithGradSurfaceTop" x1="60" y1="40" x2="196" y2="150" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.95" />
-      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.9" />
-    </linearGradient>
-
-    <linearGradient id="zenithGradSurfaceLeft" x1="40" y1="120" x2="128" y2="210" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#4338ca" />
-      <stop offset="100%" stop-color="#312e81" />
-    </linearGradient>
-
-    <linearGradient id="zenithGradSurfaceRight" x1="128" y1="120" x2="216" y2="210" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#6366f1" />
+    <!-- 渐变体系定义 -->
+    <linearGradient id="mcpMobiusHostGrad" x1="40" y1="60" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8" />
+      <stop offset="50%" stop-color="#6366f1" />
       <stop offset="100%" stop-color="#4338ca" />
     </linearGradient>
 
-    <linearGradient id="zenithGradGlow" x1="128" y1="30" x2="128" y2="100" gradientUnits="userSpaceOnUse">
+    <linearGradient id="mcpMobiusServerGrad" x1="220" y1="60" x2="60" y2="200" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#818cf8" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0284c7" />
     </linearGradient>
 
-    <!-- 阴影滤镜 -->
-    <filter id="zenithShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#4f46e5" flood-opacity="0.35" />
+    <linearGradient id="mcpCorePinGrad" x1="100" y1="128" x2="156" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a5b4fc" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <linearGradient id="mcpAuraGrad" x1="20" y1="20" x2="236" y2="236" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25" />
+      <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- 柔和发光与投影滤镜 -->
+    <filter id="mcpShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#4f46e5" flood-opacity="0.3" />
     </filter>
 
-    <filter id="zenithApexGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
+    <filter id="mcpGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
       <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
   </defs>
 
-  <!-- 背景柔和科技光晕环 -->
-  <circle cx="128" cy="128" r="96" fill="url(#zenithGradPrimary)" opacity="0.12" />
-  <circle cx="128" cy="128" r="76" stroke="url(#zenithGradPrimary)" stroke-width="2" stroke-dasharray="8 6" opacity="0.4" />
+  <!-- 背景科技光环与轨道 -->
+  <circle cx="128" cy="128" r="102" fill="url(#mcpAuraGrad)" />
+  <circle cx="128" cy="128" r="88" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.35" />
 
-  <!-- 主体群组：三层知识矩阵与天顶水晶折面 -->
-  <g filter="url(#zenithShadow)">
-    <!-- 底层晶格切面 (Foundation Layer) -->
-    <g transform="translate(0, 48)">
-      <path d="M128 160L46 118L128 76L210 118L128 160Z" fill="url(#zenithGradSurfaceTop)" opacity="0.5" />
-      <path d="M46 118L128 160V176L46 134V118Z" fill="url(#zenithGradSurfaceLeft)" opacity="0.6" />
-      <path d="M128 160L210 118V134L128 176V160Z" fill="url(#zenithGradSurfaceRight)" opacity="0.6" />
+  <!-- 主体群组：莫比乌斯双向数据协议环 (Infinity / Möbius Protocol) -->
+  <g filter="url(#mcpShadow)">
+    <!-- 左翼循环带 (Host / Model 端) -->
+    <path d="M128 128 C100 86 64 80 44 98 C20 120 22 152 46 172 C74 194 112 170 128 128 Z"
+          fill="url(#mcpMobiusHostGrad)" fill-opacity="0.95" />
+
+    <!-- 右翼循环带 (Server / Matrix 端) -->
+    <path d="M128 128 C156 170 192 176 212 158 C236 136 234 104 210 84 C182 62 144 86 128 128 Z"
+          fill="url(#mcpMobiusServerGrad)" fill-opacity="0.95" />
+
+    <!-- 交叉协议锁扣折面与立面阴影 (交汇切面) -->
+    <path d="M116 112 L140 144 L132 154 L108 122 Z" fill="#312e81" opacity="0.6" />
+    <path d="M140 112 L116 144 L124 154 L148 122 Z" fill="#0369a1" opacity="0.6" />
+
+    <!-- 核心 MCP 协议引脚接口 (3 条并行 Context 总线) -->
+    <g filter="url(#mcpGlow)">
+      <!-- 上引脚 -->
+      <line x1="114" y1="118" x2="142" y2="138" stroke="url(#mcpCorePinGrad)" stroke-width="3" stroke-linecap="round" />
+      <!-- 中引脚 (主总线) -->
+      <line x1="110" y1="128" x2="146" y2="128" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" />
+      <!-- 下引脚 -->
+      <line x1="114" y1="138" x2="142" y2="118" stroke="url(#mcpCorePinGrad)" stroke-width="3" stroke-linecap="round" />
+      <!-- 中心物理协议核心芯片 -->
+      <circle cx="128" cy="128" r="5" fill="#ffffff" />
+      <circle cx="128" cy="128" r="2.5" fill="#06b6d4" />
     </g>
 
-    <!-- 中层沉浸矩阵 (Matrix Layer) -->
-    <g transform="translate(0, 24)">
-      <path d="M128 140L54 102L128 64L202 102L128 140Z" fill="url(#zenithGradSurfaceTop)" opacity="0.8" />
-      <path d="M54 102L128 140V156L54 118V102Z" fill="url(#zenithGradSurfaceLeft)" opacity="0.85" />
-      <path d="M128 140L202 102V118L128 156V140Z" fill="url(#zenithGradSurfaceRight)" opacity="0.85" />
-    </g>
-
-    <!-- 顶层天顶巅峰核心 (Zenith Apex Core) -->
-    <g>
-      <!-- 顶面钻石光泽 -->
-      <path d="M128 120L62 86L128 52L194 86L128 120Z" fill="url(#zenithGradSurfaceTop)" />
-      <!-- 左切面 -->
-      <path d="M62 86L128 120V140L62 106V86Z" fill="url(#zenithGradSurfaceLeft)" />
-      <!-- 右切面 -->
-      <path d="M128 120L194 86V106L128 140V120Z" fill="url(#zenithGradSurfaceRight)" />
-
-      <!-- 顶棱高光线 -->
-      <path d="M128 52L62 86L128 120L194 86L128 52Z" stroke="url(#zenithGradGlow)" stroke-width="2.5" stroke-linejoin="round" />
-      <path d="M128 120V140" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" />
-    </g>
-
-    <!-- 天顶浮动微晶粒子与光芒 (Apex Sparkles) -->
-    <g filter="url(#zenithApexGlow)">
-      <!-- 顶点光芒菱形 -->
-      <path d="M128 24L133 38L147 43L133 48L128 62L123 48L109 43L123 38Z" fill="#38bdf8" />
-      <circle cx="128" cy="43" r="3" fill="#ffffff" />
-
-      <!-- 环绕粒子 -->
-      <circle cx="68" cy="62" r="3.5" fill="#ec4899" />
-      <circle cx="188" cy="62" r="3.5" fill="#06b6d4" />
-      <circle cx="216" cy="118" r="2.5" fill="#a855f7" />
-      <circle cx="40" cy="118" r="2.5" fill="#6366f1" />
-    </g>
+    <!-- 流动高光描边 (Highlight Edge) -->
+    <path d="M48 94 C66 78 100 86 126 126" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" opacity="0.8" />
+    <path d="M208 162 C190 178 156 170 130 130" stroke="#bae6fd" stroke-width="2" stroke-linecap="round" opacity="0.8" />
   </g>
+
+  <!-- 象征 10 大 MCP 生产级服务端矩阵的环绕微晶粒子 -->
+  <g filter="url(#mcpGlow)">
+    <circle cx="128" cy="38" r="3.5" fill="#38bdf8" />  <!-- RocketMQ -->
+    <circle cx="180" cy="52" r="3" fill="#818cf8" />   <!-- Kafka -->
+    <circle cx="218" cy="92" r="3.5" fill="#38bdf8" />  <!-- RabbitMQ -->
+    <circle cx="224" cy="144" r="3" fill="#818cf8" />  <!-- Redis -->
+    <circle cx="196" cy="190" r="3.5" fill="#38bdf8" /> <!-- RDBMS -->
+    <circle cx="128" cy="218" r="3.5" fill="#818cf8" /> <!-- S3 -->
+    <circle cx="76" cy="204" r="3" fill="#38bdf8" />   <!-- Kubernetes -->
+    <circle cx="38" cy="164" r="3.5" fill="#818cf8" />  <!-- SSH -->
+    <circle cx="32" cy="112" r="3" fill="#38bdf8" />   <!-- Nacos -->
+    <circle cx="68" cy="62" r="3.5" fill="#818cf8" />   <!-- Email -->
+  </g>
+
+  <!-- 协议中心脉冲微光粒子 -->
+  <circle cx="128" cy="128" r="1.5" fill="#ffffff" />
 </svg>

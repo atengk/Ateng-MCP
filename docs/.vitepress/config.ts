@@ -40,40 +40,72 @@ const zenithConfig = {
 }
 
 /**
- * 服务矩阵下拉导航项定义（中文）
+ * 顶栏核心导航项定义（中文）：极简双核直达架构（首页 + 文档，零下拉层级）
  */
-const serversNavItemZh = {
-  text: '服务矩阵',
-  items: [
-    { text: '矩阵总览', link: '/servers/' },
-    {
-      text: '消息队列 (MQ)',
-      items: [
-        { text: 'RocketMQ 5 控制面', link: '/servers/messaging/rocketmq' },
-        { text: 'Kafka 生产级服务', link: '/servers/messaging/kafka' },
-        { text: 'RabbitMQ 智能服务', link: '/servers/messaging/rabbitmq' },
-      ],
-    },
-    {
-      text: '云原生与运维',
-      items: [
-        { text: 'Kubernetes 智能运维', link: '/servers/cloud/kubernetes' },
-      ],
-    },
-    {
-      text: '存储与介质',
-      items: [
-        { text: 'S3 对象存储', link: '/servers/storage/s3' },
-      ],
-    },
-    {
-      text: '通信与工具',
-      items: [
-        { text: 'Email 邮件服务', link: '/servers/tools/email' },
-      ],
-    },
-  ],
-}
+const navItemsZh = [
+  { text: '首页', link: '/' },
+  { text: '文档', link: '/guide/getting-started', activeMatch: '^/(guide|servers|components|adr)/' },
+]
+
+/**
+ * 全量技术文档通用侧边栏大纲（涵盖核心基础指引与 10 大 MCP 生产级服务端）
+ */
+const docSidebarZh = [
+  {
+    text: '基础指引',
+    collapsed: false,
+    items: [
+      { text: '快速起步', link: '/guide/getting-started' },
+      { text: '多客户端接入指南', link: '/guide/client-setup' },
+    ],
+  },
+  {
+    text: '服务大盘',
+    items: [
+      { text: 'MCP 服务矩阵总览', link: '/servers/' },
+    ],
+  },
+  {
+    text: '数据库与缓存 (Database & Cache)',
+    collapsed: false,
+    items: [
+      { text: 'RDBMS 关系型数据库', link: '/servers/database/rdbms' },
+      { text: 'Redis 生产级缓存', link: '/servers/database/redis' },
+    ],
+  },
+  {
+    text: '消息流与队列 (Messaging)',
+    collapsed: false,
+    items: [
+      { text: 'RocketMQ 5 控制面', link: '/servers/messaging/rocketmq' },
+      { text: 'Kafka 生产级服务', link: '/servers/messaging/kafka' },
+      { text: 'RabbitMQ 智能服务', link: '/servers/messaging/rabbitmq' },
+    ],
+  },
+  {
+    text: '对象存储 (Storage)',
+    collapsed: false,
+    items: [
+      { text: 'S3 对象存储', link: '/servers/storage/s3' },
+    ],
+  },
+  {
+    text: '云原生与主机运维 (Cloud & Ops)',
+    collapsed: false,
+    items: [
+      { text: 'Kubernetes 智能运维', link: '/servers/cloud/kubernetes' },
+      { text: 'OpenSSH 终端与 SFTP', link: '/servers/cloud/ssh' },
+    ],
+  },
+  {
+    text: '微服务与通信 (Governance & Comms)',
+    collapsed: false,
+    items: [
+      { text: 'Nacos 3.0 控制面', link: '/servers/governance/nacos' },
+      { text: 'Email 邮件服务', link: '/servers/tools/email' },
+    ],
+  },
+]
 
 
 /**
@@ -522,25 +554,15 @@ export default withPwa(defineConfig({
       description: '面向大模型与 Agent 生态的现代化 Model Context Protocol (MCP) 统一服务矩阵与官方文档门户',
       themeConfig: {
         nav: [
-          { text: '首页', link: '/' },
-          { text: '指南', link: '/guide/getting-started' },
-          serversNavItemZh,
+          ...navItemsZh,
           ...(zenithConfig.blog ? [{ text: '博客', link: '/blog/' }] : []),
           ...(zenithConfig.versionSwitcher ? [versionNavItemZh] : []),
         ],
         sidebar: {
-          ...getAutoSidebar({
-            locale: 'root',
-            groupTitles: {
-              guide: '基础指引',
-              components: '交互短代码组件库',
-              servers: '服务矩阵',
-              messaging: '消息队列',
-              cloud: '云原生运维',
-              storage: '对象存储',
-              tools: '通信与工具',
-            },
-          }),
+          '/guide/': docSidebarZh,
+          '/servers/': docSidebarZh,
+          '/components/': docSidebarZh,
+          '/adr/': docSidebarZh,
           ...(zenithConfig.versionSwitcher ? {
             '/v0/': [
               {

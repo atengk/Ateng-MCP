@@ -3,27 +3,34 @@ layout: home
 
 hero:
   name: "Ateng MCP"
-  text: "生产级服务矩阵与文档门户"
-  tagline: "面向大模型与 Agent 生态的现代化 Model Context Protocol 统一服务中心"
+  text: "企业级智能体服务矩阵"
+  tagline: "让大语言模型安全、深度感知生产级基础设施 —— 涵盖关系数据库、分布式缓存、消息流、对象存储与云原生控制面的现代化 MCP 矩阵"
   image:
     src: /logo.svg
     alt: Ateng MCP
   actions:
     - theme: brand
-      text: 快速开始 →
+      text: 浏览服务大盘 →
+      link: /servers/
+    - theme: alt
+      text: 快速上手
       link: /guide/getting-started
     - theme: alt
       text: GitHub 仓库
       link: https://github.com/atengk/Ateng-MCP
 
 features:
-  - icon: 🚀
-    title: 生产级服务矩阵
-    details: 涵盖 RocketMQ、Kafka、RabbitMQ、Kubernetes、S3、Email 等高可用、安全可观测的 MCP 生产级服务端。
+  - icon: 🌐
+    title: 10 大生产级服务矩阵
+    details: 涵盖关系数据库 (RDBMS)、分布式缓存 (Redis)、消息流与队列 (RocketMQ / Kafka / RabbitMQ)、对象存储 (S3)、云原生与主机运维 (Kubernetes / OpenSSH) 及微服务与通信 (Nacos / Email)。
+  - icon: 🛡️
+    title: 生产级安全防御与权限门禁
+    details: 默认强只读探查防御、破坏性动作白名单显式赋权、高危变更阻断与敏感凭据自动脱敏，筑牢生产环境安全红线。
+  - icon: 🔌
+    title: 主流 Agent 生态即插即用
+    details: 开箱即用适配 Claude Desktop、Cursor、Windsurf、OpenAI Codex、Cline / Roo Code、Cherry Studio 及 Dify / FastGPT。
   - icon: ⚡
-    title: 极速接入秒级调试
-    details: 提供 Claude Desktop、Cursor、Cline 等主流客户端开箱即用的连接配置与参数字典。
-  - icon: 💎
-    title: 旗舰交互体验
-    details: 集成沉浸式专注阅读 (Zen Mode)、Twoslash 动态类型、Mermaid 图表与本地毫秒级离线分词检索。
+    title: Stdio / SSE 双模传输架构
+    details: 支持本地轻量 Stdio 管道直连与远程生产级 HTTP/SSE 容器常驻集群，兼具高吞吐并发与全链路协议可观测。
 ---
+
