@@ -5,18 +5,18 @@ order: 1
 
 # MCP 服务矩阵总览
 
-面向大模型与 Agent 生态的现代化 **Model Context Protocol (MCP)** 生产级服务端矩阵。通过标准化协议连接底层消息队列、数据库与缓存、云原生编排系统、主机运维终端、对象存储与微服务控制面，赋予大语言模型对真实生产环境的安全感知与精确操作能力。
+面向大模型与 Agent 生态的现代化 **Model Context Protocol (MCP)** 生产级服务端矩阵。通过标准化协议连接底层消息队列、数据库与缓存、云原生编排系统、主机运维终端、对象存储、网络流量检测、二进制逆向取证与微服务控制面，赋予大语言模型对真实生产环境的安全感知与精确操作能力。
 
 ---
 
-## 1. 10 大生产级服务矩阵大盘
+## 1. 13 大生产级服务矩阵大盘
 
 点击对应服务卡片即可进入具体服务端的详细架构设计、Tools 契约字典与客户端挂载指南：
 
 <VpCardGrid :cols="3">
   <VpCard
     title="RDBMS 关系型数据库"
-    desc="基于 SQLAlchemy 2.0，内置 sqlglot AST 语法树守卫，自动注入安全 LIMIT 与原子事务回滚。"
+    desc="基于 SQLAlchemy 2.0，内置 sqlglot AST 语法树守卫，自动注入安全 LIMIT、TokenAuth 鉴权与原子事务回滚。"
     icon="i-lucide-server"
     badge="SQLAlchemy / Python"
     badgeType="danger"
@@ -24,7 +24,7 @@ order: 1
   />
   <VpCard
     title="Redis 生产级缓存"
-    desc="双重写门禁与高危命令物理阻断，全结构切片防 OOM 读取，智能 JSON 解析与慢查询审计。"
+    desc="双重写门禁与高危命令物理阻断，全结构切片防 OOM 读取，Streamable-HTTP 流式传输与双检锁探活缓存。"
     icon="i-lucide-database"
     badge="FastMCP / Python"
     badgeType="danger"
@@ -72,11 +72,35 @@ order: 1
   />
   <VpCard
     title="OpenSSH 终端与 SFTP"
-    desc="零侵入原生 OpenSSH 直连，双模命令执行与 PTY 交互伪终端，SafetyGuard 黑名单拦截与 SFTP。"
+    desc="零侵入原生 OpenSSH 直连，双模命令执行与 PTY 终端，集成 --doctor 全景排障、端口转发与 SFTP。"
     icon="i-lucide-terminal"
     badge="TypeScript / Node"
     badgeType="purple"
     link="/servers/cloud/ssh"
+  />
+  <VpCard
+    title="TCP 协议代理与联调"
+    desc="全双工收发与独立读写锁分离，软超时定界半包保全，端口平滑扫描、Traffic Ring 审计与本地 Mock 仿真。"
+    icon="i-lucide-radio"
+    badge="FastMCP / Python"
+    badgeType="tip"
+    link="/servers/network/tcp"
+  />
+  <VpCard
+    title="全栈流量抓包与诊断"
+    desc="解耦 SQLite WAL 数据总线，L7 mitmproxy 与 L3/L4 tshark 双轨抓包，TCP 流重组、Chaos 故障注入与进程受管拉起。"
+    icon="i-lucide-shield-alert"
+    badge="FastMCP / Python"
+    badgeType="danger"
+    link="/servers/network/traffic-inspector"
+  />
+  <VpCard
+    title="二进制逆向与数字取证"
+    desc="纯 Python 跨架构内核（LIEF+Capstone+pefile），SSDEEP 跨样本 Diff，写时复制虚拟打补丁与 Mermaid CFG 提取。"
+    icon="i-lucide-binary"
+    badge="FastMCP / Python"
+    badgeType="purple"
+    link="/servers/security/reverse"
   />
   <VpCard
     title="Nacos 3.0 控制面"
@@ -112,19 +136,19 @@ flowchart TD
         C7["Dify / FastGPT"]
     end
 
-    subgraph Gateway["MCP 统一协议层 (Stdio / SSE)"]
+    subgraph Gateway["MCP 统一协议层 (Stdio / SSE / Streamable-HTTP)"]
         GW["Model Context Protocol 开放规范"]
     end
 
-    subgraph Matrix["Ateng MCP 10 大生产级服务端矩阵"]
-        subgraph MQ["消息流与队列 (Messaging)"]
-            S1["RocketMQ 5 控制面<br/>(Spring AI 2 / JDK 21)"]
-            S2["Kafka 生产级服务<br/>(FastMCP / Python 3.11+)"]
-            S3["RabbitMQ 智能服务<br/>(FastMCP / Python 3.11+)"]
-        end
+    subgraph Matrix["Ateng MCP 13 大生产级服务端矩阵"]
         subgraph DB["数据库与缓存 (Database & Cache)"]
-            S4["Redis 生产级缓存<br/>(FastMCP / Python 3.10+)"]
-            S5["RDBMS 关系型数据库<br/>(SQLAlchemy 2.0 / FastMCP)"]
+            S1["RDBMS 关系型数据库<br/>(SQLAlchemy 2.0 / FastMCP)"]
+            S2["Redis 生产级缓存<br/>(FastMCP / Streamable-HTTP)"]
+        end
+        subgraph MQ["消息流与队列 (Messaging)"]
+            S3["RocketMQ 5 控制面<br/>(Spring AI 2 / JDK 21)"]
+            S4["Kafka 生产级服务<br/>(FastMCP / Python 3.11+)"]
+            S5["RabbitMQ 智能服务<br/>(FastMCP / Python 3.11+)"]
         end
         subgraph Storage["对象存储 (Storage)"]
             S6["S3 对象存储<br/>(TypeScript / Node >= 20)"]
@@ -133,9 +157,16 @@ flowchart TD
             S7["Kubernetes 智能运维<br/>(Go 1.22+ / client-go)"]
             S8["OpenSSH 终端与 SFTP<br/>(TypeScript / ssh2)"]
         end
+        subgraph Net["网络与流量分析 (Network & Traffic)"]
+            S9["TCP 协议代理与联调<br/>(FastMCP / asyncio)"]
+            S10["全栈流量抓包与诊断<br/>(FastMCP / mitmproxy / tshark)"]
+        end
+        subgraph Sec["安全与数字取证 (Security & DFIR)"]
+            S11["二进制逆向与取证<br/>(FastMCP / LIEF / Capstone)"]
+        end
         subgraph Gov["微服务与通信 (Governance & Comms)"]
-            S9["Nacos 3.0 控制面<br/>(TypeScript / OpenAPI)"]
-            S10["Email 邮件服务<br/>(TypeScript / Nodemailer)"]
+            S12["Nacos 3.0 控制面<br/>(TypeScript / OpenAPI)"]
+            S13["Email 邮件服务<br/>(TypeScript / Nodemailer)"]
         end
     end
 
@@ -150,24 +181,30 @@ flowchart TD
     Gateway --> S8
     Gateway --> S9
     Gateway --> S10
+    Gateway --> S11
+    Gateway --> S12
+    Gateway --> S13
 ```
 
 ---
 
 ## 3. 技术规范与协议支持对比
 
-下表汇总了服务矩阵中全部 10 大服务端的实现栈、通信协议与运行接入方式：
+下表汇总了服务矩阵中全部 13 大服务端的实现栈、通信协议与运行接入方式：
 
 | 服务名称 | 领域分类 | 核心技术栈 | 通信协议 | 运行接入方式 | 详情文档 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **RDBMS 关系型数据库**| 数据库/缓存 | Python 3.12+ + SQLAlchemy 2.0 + sqlglot | Stdio / SSE | `uvx atengk-mcp-server-rdbms` | [查看文档](./database/rdbms.md) |
-| **Redis 生产级缓存** | 数据库/缓存 | Python 3.10+ + FastMCP + redis-py | Stdio / SSE | `uvx atengk-mcp-server-redis` | [查看文档](./database/redis.md) |
+| **Redis 生产级缓存** | 数据库/缓存 | Python 3.10+ + FastMCP + redis-py | Stdio / SSE / Streamable-HTTP | `uvx atengk-mcp-server-redis` | [查看文档](./database/redis.md) |
 | **RocketMQ 5 控制面** | 消息队列 | Spring AI 2 + Spring Boot 4 + JDK 21 | Stdio / SSE | `npx -y @atengk/mcp-server-rocketmq` | [查看文档](./messaging/rocketmq.md) |
 | **Kafka 生产级服务** | 消息队列 | Python 3.11+ + FastMCP + aiokafka | Stdio / SSE | `uvx atengk-mcp-server-kafka` | [查看文档](./messaging/kafka.md) |
 | **RabbitMQ 智能服务** | 消息队列 | Python 3.11+ + FastMCP + AMQP 0-9-1 | Stdio / SSE | `uvx atengk-mcp-server-rabbitmq` | [查看文档](./messaging/rabbitmq.md) |
 | **S3 对象存储** | 存储介质 | TypeScript + Node >= 20 + AWS SDK v3 | Stdio / SSE | `npx -y @atengk/mcp-server-s3` | [查看文档](./storage/s3.md) |
 | **Kubernetes 智能运维**| 云原生运维 | Go 1.22+ + k8s client-go | Stdio / SSE | `npx -y @atengk/mcp-server-kubernetes` | [查看文档](./cloud/kubernetes.md) |
 | **OpenSSH 终端与 SFTP**| 主机运维 | TypeScript + Node >= 18 + ssh2 | Stdio / SSE | `npx -y @atengk/mcp-server-ssh` | [查看文档](./cloud/ssh.md) |
+| **TCP 协议代理与联调**| 网络分析 | Python 3.10+ + FastMCP + asyncio | Stdio / SSE | `uvx atengk-mcp-server-tcp` | [查看文档](./network/tcp.md) |
+| **全栈流量抓包与诊断**| 网络分析 | Python 3.11+ + FastMCP + mitmproxy + tshark | Stdio / SSE | `uvx atengk-mcp-server-traffic-inspector` | [查看文档](./network/traffic-inspector.md) |
+| **二进制逆向与取证** | 安全取证 | Python 3.11+ + FastMCP + LIEF + Capstone | Stdio / SSE | `uvx atengk-mcp-server-reverse` | [查看文档](./security/reverse.md) |
 | **Nacos 3.0 控制面** | 服务治理 | TypeScript + Node >= 20 + OpenAPI | Stdio / SSE | `npx -y @atengk/mcp-server-nacos` | [查看文档](./governance/nacos.md) |
 | **Email 邮件服务** | 通信协作 | TypeScript + Node >= 20 + Nodemailer | Stdio / SSE | `npx -y @atengk/mcp-server-email` | [查看文档](./tools/email.md) |
 

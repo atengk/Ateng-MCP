@@ -48,7 +48,7 @@ const navItemsZh = [
 ]
 
 /**
- * 全量技术文档通用侧边栏大纲（涵盖核心基础指引与 10 大 MCP 生产级服务端）
+ * 全量技术文档通用侧边栏大纲（涵盖核心基础指引与 13 大 MCP 生产级服务端）
  */
 const docSidebarZh = [
   {
@@ -95,6 +95,21 @@ const docSidebarZh = [
     items: [
       { text: 'Kubernetes 智能运维', link: '/servers/cloud/kubernetes' },
       { text: 'OpenSSH 终端与 SFTP', link: '/servers/cloud/ssh' },
+    ],
+  },
+  {
+    text: '网络与流量分析 (Network & Traffic)',
+    collapsed: false,
+    items: [
+      { text: 'TCP 协议代理与联调', link: '/servers/network/tcp' },
+      { text: '全栈流量抓包与诊断', link: '/servers/network/traffic-inspector' },
+    ],
+  },
+  {
+    text: '安全与数字取证 (Security & DFIR)',
+    collapsed: false,
+    items: [
+      { text: '二进制逆向分析与取证', link: '/servers/security/reverse' },
     ],
   },
   {

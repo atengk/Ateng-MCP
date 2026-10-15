@@ -7,7 +7,7 @@ order: 2
 
 基于标准 **OpenSSH 协议** 深度连接与操控 Linux/Unix 系统的 **Model Context Protocol (MCP)** 官方服务，基于 **Node.js** 与 **TypeScript** 构建。
 
-为大语言模型（LLM）和 AI 智能体（Claude Desktop、Cursor、Windsurf、Antigravity、Cline 等）提供安全、可控、零侵入的远程终端执行与 POSIX 文件系统管理基础设施。
+为大语言模型（LLM）和 AI 智能体（Claude Desktop、Cursor、Windsurf、Antigravity、Cline 等）提供安全、可控、零侵入的远程终端执行、POSIX 文件系统管理、预建端口转发隧道以及最新集成的 **`--doctor` 全景自检诊断套件** 与 **CORS 来源白名单防御**。
 
 ---
 
@@ -21,6 +21,7 @@ flowchart TD
 
     subgraph ProtocolLayer ["MCP 协议中枢 (@atengk/mcp-server-ssh)"]
         Server["MCP Server (stdio / sse)"]
+        Doctor["Doctor 全景诊断套件 (SSE 熔断 / 隧道 / 白名单)"]
         Pool["ConnectionPool (多主机连接池调度器)"]
     end
 
@@ -28,10 +29,12 @@ flowchart TD
         Exec["无状态命令执行 (ssh_exec - bash -l -c)"]
         Session["常驻 PTY 终端会话流 (ssh_session_*)"]
         SFTP["POSIX SFTP 文件引擎 (sftp_*)"]
+        Tunnel["动态/预建端口转发隧道 (ssh_forward_port)"]
     end
 
-    subgraph GuardLayer ["安全防灾双保险体系"]
+    subgraph GuardLayer ["安全防灾与合规双保险体系"]
         Safety["SafetyGuard 黑名单拦截 (rm -rf / mkfs / reboot)"]
+        Cors["CORS 来源白名单防御 (MCP_SSH_CORS_ORIGINS)"]
         Truncate["OutputTruncator 64KB 双端智能截断与 ANSI 清洗"]
         DryRun["dryRun 模拟演练模式"]
     end
@@ -43,29 +46,35 @@ flowchart TD
     end
 
     Client -->|JSON-RPC| Server
+    Server --> Doctor
     Server --> Pool
-    Pool --> Safety
+    Pool --> Safety --> Cors
     Safety --> DualEngine
     DualEngine --> Truncate
     DualEngine --> Bastion
     Bastion --> Host1
     DualEngine --> Host2
+    DualEngine --> Tunnel
 ```
 
 ### 1.1 零侵入标准协议直连
 - **目标机免装 Agent**：目标 Linux 主机仅需原生 OpenSSH 服务，绝不安装任何私有 Agent 或额外 HTTP 守护进程；
 - **凭据链与企业拓扑**：支持密码认证、公私钥（`id_ed25519` / `id_rsa` / Base64 编码）、`~/.ssh/config` 别名继承以及企业级 **ProxyJump 堡垒机/跳板机隧道**。
 
-### 1.2 双模命令执行引擎
+### 1.2 全景自检排障套件 (`doctor`，v1.4.1)
+- 运行 `npx -y @atengk/mcp-server-ssh doctor` 执行一站式前置环境体检；
+- **SSE 非回环熔断防护 (Fail-Closed)**：当以 SSE 模式暴露于公网/非回环地址且未配置鉴权时，诊断器自动拦截阻断；
+- **预建端口转发与白名单合规**：检测目标主机端口可达性、预建 SSH 端口转发隧道配置合法性与 Host 白名单合规度。
+
+### 1.3 双模命令执行与端口转发
 - **无状态执行 (`ssh_exec`)**：单命令独立通道，默认包装为登录 Shell（`bash -l -c`）以完整继承用户环境变量与 `PATH`，精确捕获退出码、耗时与标准输出/错误；
-- **交互式会话 (`ssh_session_*`)**：基于 PTY 伪终端维持常驻会话流，支持流式增量回显与 `\x03` (Ctrl+C) 中断控制信号。
+- **交互式会话 (`ssh_session_*`)**：基于 PTY 伪终端维持常驻会话流，支持流式增量回显与 `\x03` (Ctrl+C) 中断控制信号；
+- **端口转发隧道 (`ssh_forward_port`)**：支持本地端口转发（Local Port Forwarding），大模型可直接穿透内网调试远程数据库或内部 Web 仪表盘。
 
-### 1.3 严格安全防护双保险
+### 1.4 严格安全防护双保险
 - **前置安全守卫 (`SafetyGuard`)**：在命令下发前物理拦截系统全盘强删（`rm -rf /`）、磁盘覆写（`dd`/`mkfs`）、关机重启（`reboot`/`shutdown`）及 Fork 炸弹等致命破坏，支持 `dryRun` 演练模式；
-- **智能防爆截断 (`OutputTruncator`)**：单次输出实施 64KB 双端智能截断（保留前 8KB 标头与后 56KB 最新日志），自动清洗 ANSI 终端转义符，保护大模型上下文窗口不被撑爆。
-
-### 1.4 全功能 POSIX SFTP 管理
-- 文本安全读写（内置 512KB 防撑爆阈值）、双向文件极速上传与下载、目录树浏览、POSIX 元数据获取与软链接防环保护（`maxDepth: 10`）。
+- **智能防爆截断 (`OutputTruncator`)**：单次输出实施 64KB 双端智能截断（保留前 8KB 标头与后 56KB 最新日志），自动清洗 ANSI 终端转义符，保护大模型上下文窗口不被撑爆；
+- **CORS 跨域策略重塑**：支持 `--cors-origins` 与来源白名单校验，杜绝未经授权的跨域前端恶意调度。
 
 ---
 
@@ -100,17 +109,31 @@ flowchart TD
 ### 3.1 方式 1：使用 `npx` 免安装直接运行（推荐）
 
 ```bash
+# 1. 默认 stdio 管道运行
 npx -y @atengk/mcp-server-ssh
+
+# 2. 运行前置环境与安全健康体检
+npx -y @atengk/mcp-server-ssh doctor
 ```
 
 ### 3.2 方式 2：使用 Docker 容器化运行
 
 ```bash
 # 本地单次交互管道 (stdio)
-docker run -i --rm -e MCP_SSH_HOST="192.168.1.100" -e MCP_SSH_USER="root" -e MCP_SSH_PASSWORD="YOUR_PASSWORD" ghcr.io/atengk/mcp-server-ssh:latest
+docker run -i --rm \
+  -e MCP_SSH_HOST="192.168.1.100" \
+  -e MCP_SSH_USER="root" \
+  -e MCP_SSH_PASSWORD="YOUR_PASSWORD" \
+  ghcr.io/atengk/mcp-server-ssh:latest
 
 # 后台守护进程常驻 (SSE 远程端点)
-docker run -d --name mcp-ssh -p 8000:8000 -e MCP_SSH_TRANSPORT=sse -e MCP_SSH_HOST="192.168.1.100" -e MCP_SSH_USER="root" -e MCP_SSH_PASSWORD="YOUR_PASSWORD" ghcr.io/atengk/mcp-server-ssh:latest
+docker run -d --name mcp-ssh -p 8000:8000 \
+  -e MCP_SSH_TRANSPORT=sse \
+  -e MCP_SSH_HOST="192.168.1.100" \
+  -e MCP_SSH_USER="root" \
+  -e MCP_SSH_PASSWORD="YOUR_PASSWORD" \
+  -e MCP_SSH_CORS_ORIGINS="https://myagent.company.com" \
+  ghcr.io/atengk/mcp-server-ssh:latest
 ```
 
 ---
@@ -154,9 +177,6 @@ docker run -d --name mcp-ssh -p 8000:8000 -e MCP_SSH_TRANSPORT=sse -e MCP_SSH_HO
   }
 }
 ```
-
-> [!TIP] 容器与跨平台免文件挂载
-> 在容器或无物理私钥文件环境中，可直接将私钥 Base64 编码字符串赋值给 `MCP_SSH_PRIVATE_KEY_BASE64`，服务将自动解码，避免文件挂载开销与换行丢失。
 
 ### 4.3 场景 3：直接复用本地 `~/.ssh/config` 别名
 
@@ -212,6 +232,7 @@ docker run -d --name mcp-ssh -p 8000:8000 -e MCP_SSH_TRANSPORT=sse -e MCP_SSH_HO
 | `MCP_SSH_PROXY_HOST` | `SSH_PROXY_HOST` | 无 | ProxyJump 堡垒机/跳板机地址 |
 | `MCP_SSH_PROXY_PORT` | `SSH_PROXY_PORT` | `22` | 跳板机端口号 |
 | `MCP_SSH_TIMEOUT` | `SSH_TIMEOUT` | `30000` | 建立连接超时时间（毫秒） |
+| `MCP_SSH_CORS_ORIGINS` | `SSH_CORS_ORIGINS` | `*` | 允许的 CORS 跨域来源清单 |
 | `MCP_SSH_ALLOW_DANGEROUS_COMMANDS` | `SSH_ALLOW_DANGEROUS_COMMANDS` | `false` | 致命高危命令安全逃生门 |
 
 ---

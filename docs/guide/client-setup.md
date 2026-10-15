@@ -5,27 +5,28 @@ order: 2
 
 # 多客户端统一接入指南
 
-Model Context Protocol (MCP) 作为开放标准协议，已获得主流 AI 编程助手、智能运维 Agent 以及大模型宿主环境的原生支持。本文档提供在不同客户端环境中接入 **Ateng MCP 服务矩阵** 的标准配置模版与网络调试指引。
+Model Context Protocol (MCP) 作为开放标准协议，已获得主流 AI 编程助手、智能运维 Agent 以及大模型宿主环境的原生支持。本文档提供在不同客户端环境中接入 **Ateng MCP 服务矩阵**（涵盖 13 大生产级服务端）的标准配置模版与网络调试指引。
 
 ---
 
-## 1. 通信模式概览：Stdio 与 SSE
+## 1. 通信模式概览：Stdio、SSE 与 Streamable-HTTP
 
-Ateng MCP 服务矩阵原生支持两种标准通信模式，您可以根据部署拓扑灵活选择：
+Ateng MCP 服务矩阵原生支持标准通信模式，您可以根据部署拓扑灵活选择：
 
 | 模式 | 运行拓扑 | 适用场景 | 优势与约束 |
 | :--- | :--- | :--- | :--- |
-| **本地管道 (Stdio)** | 宿主应用作为父进程，通过子进程直接拉起可执行文件并借助 `stdin`/`stdout` 交互 | 本地桌面端、单机研发排障（如 Claude Desktop、Cursor、Windsurf、Cline / Roo Code） | 零网络端口暴露，启动即用；需要本地具备对应语言运行时（如 Node.js / Python / Java）。 |
+| **本地管道 (Stdio)** | 宿主应用作为父进程，通过子进程直接拉起可执行文件并借助 `stdin`/`stdout` 交互 | 本地桌面端、单机研发排障（如 Claude Desktop、Cursor、Windsurf、Cline / Roo Code、Antigravity） | 零网络端口暴露，启动即用；需要本地具备对应语言运行时（如 Node.js / Python / Java）。 |
 | **远程长连接 (SSE)** | 服务端作为独立 HTTP 服务常驻运行，客户端通过 Server-Sent Events 流式端点通信 | 容器云编排、团队私有网关、Docker 环境（如 Kubernetes、Cherry Studio、Dify / FastGPT） | 支持跨网络访问与集中化鉴权；需要配置网络端口映射与跨域访问。 |
+| **流式全双工 (Streamable-HTTP)** | 基于 `/mcp` 核心端点的现代化全双工流式 HTTP 传输（Redis、RDBMS 等原生支持） | 高性能反向代理、云原生微服务网关、生产级高并发 API 编排 | 传输效率高，原生支持常数时间 Bearer Token 鉴权与 DNS 重绑定防御。 |
 
 ```mermaid
 flowchart LR
   subgraph Local_Host["本地客户端 (Stdio 管道)"]
-    IDE["Claude Desktop / Cursor / Windsurf / Cline / Roo Code"] -->|子进程 stdin/stdout| LocalMCP["MCP 服务端进程"]
+    IDE["Claude Desktop / Cursor / Windsurf / Cline / Antigravity"] -->|子进程 stdin/stdout| LocalMCP["MCP 服务端进程"]
   end
 
-  subgraph Cloud_Host["分布式环境 (SSE 远程长连接)"]
-    Agent["Cherry Studio / Dify / FastGPT"] -->|HTTP GET /sse| Gateway["常驻 MCP HTTP 服务端"]
+  subgraph Cloud_Host["分布式环境 (SSE / Streamable-HTTP 远程长连接)"]
+    Agent["Cherry Studio / Dify / FastGPT"] -->|HTTP GET /sse 或 POST /mcp| Gateway["常驻 MCP HTTP 网关 (带 Bearer 鉴权)"]
     Agent -->|HTTP POST /message| Gateway
   end
 ```
@@ -66,6 +67,28 @@ Claude Desktop 是 Anthropic 官方推出的桌面端 AI 助手，在设置中�
         "MCP_SSH_PASSWORD": "YOUR_PASSWORD"
       }
     },
+    "tcp": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-tcp"],
+      "env": {
+        "MCP_TCP_MAX_CONNECTIONS": "10",
+        "MCP_TCP_ALLOW_PRIVATE_NETWORKS": "true"
+      }
+    },
+    "traffic-inspector": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-traffic-inspector"]
+    },
+    "reverse": {
+      "command": "uvx",
+      "args": [
+        "atengk-mcp-server-reverse",
+        "--allowed-dir",
+        "./samples",
+        "--allowed-dir",
+        "./output"
+      ]
+    },
     "s3-storage": {
       "command": "npx",
       "args": ["-y", "@atengk/mcp-server-s3"],
@@ -103,6 +126,24 @@ Cursor 深度集成了 MCP 协议，支持在项目根目录下通过代码级�
         "MCP_RDBMS_PASSWORD": "YOUR_DB_PASSWORD",
         "MCP_RDBMS_DATABASE": "dev_db"
       }
+    },
+    "tcp-tool": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-tcp"]
+    },
+    "traffic-inspector": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-traffic-inspector"]
+    },
+    "binary-reverse": {
+      "command": "uvx",
+      "args": [
+        "atengk-mcp-server-reverse",
+        "--allowed-dir",
+        "./samples",
+        "--allowed-dir",
+        "./output"
+      ]
     },
     "kubernetes-ops": {
       "command": "npx",
@@ -154,6 +195,10 @@ Windsurf 是 Codeium 推出的新一代 AI 原生 IDE，通过 Cascade 智能体
         "MCP_SSH_CONFIG_ALIAS": "my-cloud-vps"
       }
     },
+    "traffic-inspector": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-traffic-inspector"]
+    },
     "kafka": {
       "command": "uvx",
       "args": ["atengk-mcp-server-kafka", "--bootstrap-servers", "127.0.0.1:9092", "--read-only"]
@@ -189,6 +234,25 @@ Cline 与 Roo Code（前身为 Roo Cline）是 VS Code 平台上极其热门的�
         "redis_scan_keys",
         "redis_key_inspect",
         "redis_get_string"
+      ]
+    },
+    "tcp": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-tcp"],
+      "disabled": false,
+      "autoApprove": [
+        "tcp_ping_port",
+        "tcp_port_scan"
+      ]
+    },
+    "traffic-inspector": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-traffic-inspector"],
+      "disabled": false,
+      "autoApprove": [
+        "list_http_flows",
+        "get_http_flow_detail",
+        "diagnose_network_session"
       ]
     },
     "ssh": {
@@ -242,6 +306,24 @@ Google Antigravity 体系原生支持按服务分治的 Schema 注册与全局 J
       "command": "uvx",
       "args": ["atengk-mcp-server-rdbms", "--db-url", "mysql+pymysql://root:YOUR_PASSWORD@127.0.0.1:3306/mydb"]
     },
+    "tcp": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-tcp"]
+    },
+    "traffic-inspector": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-traffic-inspector"]
+    },
+    "reverse": {
+      "command": "uvx",
+      "args": [
+        "atengk-mcp-server-reverse",
+        "--allowed-dir",
+        "./samples",
+        "--allowed-dir",
+        "./output"
+      ]
+    },
     "ssh": {
       "command": "npx",
       "args": ["-y", "@atengk/mcp-server-ssh"],
@@ -256,41 +338,31 @@ Google Antigravity 体系原生支持按服务分治的 Schema 注册与全局 J
 }
 ```
 
-#### 模式 B：原子工具 Schema 注入目录
-将特定工具的最佳实践与参数契约放入 `~/.gemini/antigravity/mcp/<service-name>/`：
-
-```text
-~/.gemini/antigravity/mcp/
-├── redis/
-│   ├── instructions.md        # 服务最佳实践与 Agent 操作指引
-│   ├── redis_scan_keys.json
-│   └── redis_key_inspect.json
-├── ssh/
-│   ├── instructions.md
-│   ├── ssh_exec.json
-│   └── sftp_read_file.json
-└── nacos/
-    ├── instructions.md
-    └── nacos_get_config.json
-```
-
 ---
 
 ### 2.6 Cherry Studio (国产热门全能客户端)
 
 Cherry Studio 是一款界面精美、支持多厂商模型、知识库与插件体系的跨平台桌面 AI 客户端，对 MCP 提供了直观的可视化配置界面与热插拔支持。
 
-#### 接入方式
-1. 打开 Cherry Studio 设置，进入 **「MCP 服务器」** 标签页；
-2. 点击 **「添加服务器」**，选择 **Stdio** 或 **SSE** 类型；
-3. 或点击右上角 **「编辑配置 (JSON)」** 直接批量贴入标准配置：
-
+#### 批量 JSON 配置示例
 ```json
 {
   "mcpServers": {
     "redis-server": {
       "command": "uvx",
       "args": ["atengk-mcp-server-redis", "--url", "redis://localhost:6379/0"]
+    },
+    "tcp-server": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-tcp"]
+    },
+    "traffic-server": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-traffic-inspector"]
+    },
+    "reverse-server": {
+      "command": "uvx",
+      "args": ["atengk-mcp-server-reverse", "--allowed-dir", "./samples"]
     },
     "ssh-server": {
       "command": "npx",
@@ -308,7 +380,6 @@ Cherry Studio 是一款界面精美、支持多厂商模型、知识库与插件
   }
 }
 ```
-4. 保存后点击服务右侧的刷新按钮，状态变为绿色即表示工具已成功加载。
 
 ---
 
@@ -320,12 +391,14 @@ Cherry Studio 是一款界面精美、支持多厂商模型、知识库与插件
 ```yaml
 services:
   mcp-redis:
-    image: atengk/mcp-server-redis:latest
+    image: ghcr.io/atengk/mcp-server-redis:latest
     ports:
       - "8001:8000"
     environment:
       - MCP_REDIS_TRANSPORT=sse
       - MCP_REDIS_URL=redis://192.168.1.100:6379/0
+      - MCP_REDIS_AUTH_TOKEN=YOUR_SECURE_TOKEN_AT_LEAST_16_CHARS
+      - MCP_REDIS_ALLOWED_HOSTS=*
 
   mcp-ssh:
     image: ghcr.io/atengk/mcp-server-ssh:latest
@@ -350,7 +423,7 @@ services:
 1. 进入应用编排界面或工具库 (Tools)；
 2. 选择 **「添加自定义 MCP 工具 (Add MCP Tool)」**；
 3. **协议类型** 选择 `Server-Sent Events (SSE)`；
-4. **服务器 URL (Server URL)** 填写容器映射的 SSE 地址：
+4. **服务器 URL (Server URL)** 填写容器映射的 SSE 地址（若开启鉴权需配置 Header `Authorization: Bearer <token>`）：
    - Redis: `http://<服务器IP>:8001/sse`
    - SSH: `http://<服务器IP>:8002/sse`
    - Nacos: `http://<服务器IP>:8003/sse`
@@ -367,8 +440,6 @@ OpenAI Codex 提供了强大的命令行工具 (`codex`) 与桌面开发环境�
 - **项目级受信任配置**：`.codex/config.toml`（位于当前代码仓库根目录下，需信任项目目录）
 
 #### 方式 A：编写 TOML 配置文件 (`config.toml`)
-
-直接在 `config.toml` 中通过 `[mcp_servers.<name>]` 块声明服务端：
 
 ```toml
 # 1. RDBMS 关系型数据库服务 (Stdio 模式，原子字段免转义)
@@ -389,7 +460,22 @@ MCP_RDBMS_DATABASE = "mydb"
 command = "uvx"
 args = ["atengk-mcp-server-redis", "--url", "redis://127.0.0.1:6379/0"]
 
-# 3. OpenSSH 智能终端与 SFTP 服务 (Stdio 模式)
+# 3. TCP 协议代理与联调服务 (Stdio 模式)
+[mcp_servers.tcp]
+command = "uvx"
+args = ["atengk-mcp-server-tcp"]
+
+# 4. 全栈网络流量抓包与诊断服务 (Stdio 模式)
+[mcp_servers.traffic-inspector]
+command = "uvx"
+args = ["atengk-mcp-server-traffic-inspector"]
+
+# 5. 二进制逆向分析与取证服务 (Stdio 模式)
+[mcp_servers.reverse]
+command = "uvx"
+args = ["atengk-mcp-server-reverse", "--allowed-dir", "./samples"]
+
+# 6. OpenSSH 智能终端与 SFTP 服务 (Stdio 模式)
 [mcp_servers.ssh]
 command = "npx"
 args = ["-y", "@atengk/mcp-server-ssh"]
@@ -399,28 +485,9 @@ MCP_SSH_HOST = "192.168.1.100"
 MCP_SSH_USER = "root"
 MCP_SSH_PASSWORD = "YOUR_SSH_PASSWORD"
 
-# 4. 远程常驻服务网关 (SSE 模式)
+# 7. 远程常驻服务网关 (SSE 模式)
 [mcp_servers.remote-gateway]
 url = "http://192.168.1.100:8000/sse"
-```
-
-#### 方式 B：使用 Codex CLI 命令行快速注册
-
-您也可以在终端中直接通过 `codex mcp` 命令行一键动态挂载服务（命令行将自动写入对应的 `config.toml`）：
-
-```bash
-# 注册 Stdio 本地服务（使用 -- 分隔命令与参数）
-codex mcp add redis -- uvx atengk-mcp-server-redis --url redis://127.0.0.1:6379/0
-codex mcp add rdbms -- uvx atengk-mcp-server-rdbms --db-url mysql+pymysql://root:YOUR_PASSWORD@127.0.0.1:3306/mydb
-
-# 注册 SSE 远程端点服务
-codex mcp add remote-gateway --url http://192.168.1.100:8000/sse
-
-# 查看当前已挂载的服务列表
-codex mcp list
-
-# 检视特定服务的详细工具与配置
-codex mcp show redis
 ```
 
 ---
@@ -432,8 +499,8 @@ codex mcp show redis
 1. **零明文硬编码**：严禁在公开或共享的配置文件中填入明文私钥。请利用各客户端提供的系统环境变量继承能力（`${VARIABLE_NAME}`），或在本地未跟踪的私有环境变量文件中声明；
 2. **只读保护优先**：在初次配置或生产排障环境中，优先为服务端开启只读安全开关（如 `K8S_READ_ONLY=true`、`MCP_KAFKA_READ_ONLY=true`、`MCP_S3_READ_ONLY=true`）；
 3. **白名单自动授权 (Auto-Approve)**：
-   - 针对幂等、只读型工具（如 `list`、`inspect`、`query`），可在客户端配置中加入自动放行规则；
-   - 针对高危或产生写操作的工具（如 `delete`、`dml`、`publish`），**必须保留人工审批卡点**。
+   - 针对幂等、只读型工具（如 `list`、`inspect`、`query`、`ping`），可在客户端配置中加入自动放行规则；
+   - 针对高危或产生写操作的工具（如 `delete`、`dml`、`publish`、`patch`），**必须保留人工审批卡点**。
 
 ---
 
@@ -443,7 +510,7 @@ codex mcp show redis
 | :--- | :--- | :--- |
 | **`spawn ENOENT` 错误** | 客户端未在系统全局 `PATH` 中找到指定命令（如 `npx`、`uvx`） | 确认 Node.js / uv 已正确安装并加入系统 PATH，或在配置文件中改用完整绝对路径。 |
 | **连接挂死 / JSON Parse Error** | 服务端在 Stdio 模式下向标准输出输出了非 JSON 文本（如日志或 Banner） | 确保调试日志输出至 `stderr`，严禁污染 `stdout` 协议通道。 |
-| **SSE 401 / 403 鉴权失败** | 远程 MCP 服务端开启了网关鉴权，客户端未携带请求头 | 在客户端配置中检查 Headers 注入规则，或通过内网受信通道访问。 |
+| **SSE / HTTP 401 / 403 鉴权失败** | 远程 MCP 服务端开启了网关鉴权（如 Redis/RDBMS Bearer Token），客户端未携带请求头 | 在客户端配置中检查 Headers 规则（`Authorization: Bearer <token>`），或核对 `--allowed-hosts` 域名白名单。 |
 | **权限不足 (`EACCES`)** | 执行脚本或二进制文件缺失执行权限 | 在 Linux/macOS 终端中执行 `chmod +x <binary_path>`。 |
 | **Tools 列表为空** | 客户端与服务端握手成功但未能正确协商工具 Schema | 检查服务端 SDK 版本是否兼容，使用官方 MCP Inspector 单独探查。 |
 
