@@ -28,19 +28,19 @@
     "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.140",
+    "@iconify-json/lucide": "^1.2.149",
     "@shikijs/vitepress-twoslash": "^4.5.0",
     "@stackblitz/sdk": "^1.11.1",
-    "@unocss/preset-icons": "^66.0.0",
-    "@unocss/preset-uno": "^66.0.0",
+    "@unocss/preset-icons": "^66.12.0",
+    "@unocss/preset-uno": "^66.12.0",
     "@vite-pwa/vitepress": "^1.1.0",
     "markdown-it-mathjax3": "^4.3.2",
     "markmap-lib": "^0.18.12",
     "markmap-view": "^0.18.12",
-    "medium-zoom": "^1.1.0",
-    "mermaid": "^12.1.0",
+    "medium-zoom": "^1.1.2",
+    "mermaid": "^12.2.0",
     "typescript": "^5.7.3",
-    "unocss": "^66.0.0",
+    "unocss": "^66.12.0",
     "vitepress": "^1.6.3"
   },
   "author": "Ateng"
